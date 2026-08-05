@@ -8,8 +8,11 @@
 </FilesMatch>
 
 # 2) Block direct access to sensitive top-level directories
+#    (NOT "storage" - public/storage is a symlink to storage/app/public
+#    and is reached through this same rewrite; NOT "lang" - /lang/{locale}
+#    is the app's locale-switcher route, not the translation files folder)
 RewriteEngine On
-RewriteRule ^(\.git|\.claude|\.agents|vendor|storage|bootstrap|database|tests|resources|routes|config|lang|node_modules|aaa)(/.*)?$ - [F,L]
+RewriteRule ^(\.git|\.claude|\.agents|vendor|bootstrap|database|tests|resources|routes|config|node_modules|aaa)(/.*)?$ - [F,L]
 
 # 3) Forward everything else to /public, then let Laravel's own
 #    public/.htaccess route it to index.php

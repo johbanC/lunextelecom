@@ -10,7 +10,7 @@
 
     <div class="max-w-3xl mx-auto">
         <div class="flex justify-end mb-3">
-            <x-locale-switcher class="bg-white" />
+            <x-locale-switcher class="bg-white" :locales="['en' => 'EN', 'es' => 'ES', 'hi' => 'हि']" />
         </div>
 
         <div class="rounded-2xl bg-white shadow-xl shadow-gray-300/40 overflow-hidden">

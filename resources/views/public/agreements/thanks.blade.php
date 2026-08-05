@@ -9,7 +9,7 @@
 <body class="min-h-screen bg-gray-100 bg-[radial-gradient(circle_at_top,_var(--color-brand-blue-50),_var(--color-gray-100)_60%)] flex items-center justify-center p-4 font-sans">
     <div class="max-w-md w-full space-y-3">
         <div class="flex justify-end">
-            <x-locale-switcher />
+            <x-locale-switcher :locales="['en' => 'EN', 'es' => 'ES', 'hi' => 'हि']" />
         </div>
         <div class="w-full bg-white shadow-xl shadow-gray-300/40 rounded-2xl p-8 text-center space-y-4">
             <img src="{{ asset('img/logo.png') }}" alt="Lunex Telecom" class="h-12 w-auto mx-auto">
