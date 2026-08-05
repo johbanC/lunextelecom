@@ -29,7 +29,7 @@
                     </svg>
                 </div>
                 <p class="text-lg font-bold text-gray-800">{{ __('This form has already been signed.') }}</p>
-                <p class="text-sm text-gray-500">{{ __('Signed on :date. If you think this is a mistake, contact Lunex Telecom.', ['date' => $agreement->signed_at->format('d/m/Y H:i')]) }}</p>
+                <p class="text-sm text-gray-500">{{ __('Signed on :date. If you think this is a mistake, contact Lunex Telecom.', ['date' => $agreement->signed_at->format('m/d/Y H:i')]) }}</p>
             </div>
         @elseif ($expired)
             <div class="p-10 text-center space-y-3">

@@ -14,16 +14,16 @@
         <div class="flex items-start justify-between flex-wrap gap-4 p-6 border-b border-gray-100">
             <div>
                 <h1 class="text-xl font-bold text-gray-800">{{ \App\Models\Agreement::typeLabel($agreement->type) }}</h1>
-                <p class="text-sm text-gray-500 mt-1">Account ID: <span class="font-bold text-gray-700">{{ $agreement->account_id }}</span> &middot; {{ __('Date') }}: {{ $agreement->form_date->format('d/m/Y') }}</p>
-                <p class="text-xs text-gray-400 mt-1">{{ __('Created by :name on :date', ['name' => $agreement->creator?->name ?? '—', 'date' => $agreement->created_at->format('d/m/Y H:i')]) }}</p>
+                <p class="text-sm text-gray-500 mt-1">Account ID: <span class="font-bold text-gray-700">{{ $agreement->account_id }}</span> &middot; {{ __('Date') }}: {{ $agreement->form_date->format('m/d/Y') }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ __('Created by :name on :date', ['name' => $agreement->creator?->name ?? '—', 'date' => $agreement->created_at->format('m/d/Y H:i')]) }}</p>
             </div>
             @if ($agreement->isSigned())
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
-                    <span class="size-1.5 rounded-full bg-emerald-500"></span> {{ __('Signed :date', ['date' => $agreement->signed_at->format('d/m/Y H:i')]) }}
+                    <span class="size-1.5 rounded-full bg-emerald-500"></span> {{ __('Signed :date', ['date' => $agreement->signed_at->format('m/d/Y H:i')]) }}
                 </span>
             @elseif ($agreement->isExpired())
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-200 text-gray-600 text-sm font-bold">
-                    <span class="size-1.5 rounded-full bg-gray-500"></span> {{ __('Expired :date', ['date' => $agreement->expires_at->format('d/m/Y H:i')]) }}
+                    <span class="size-1.5 rounded-full bg-gray-500"></span> {{ __('Expired :date', ['date' => $agreement->expires_at->format('m/d/Y H:i')]) }}
                 </span>
             @else
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-sm font-bold">
@@ -39,7 +39,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-5 shrink-0 text-gray-500 mt-0.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                         </svg>
-                        <p class="text-sm text-gray-600">{{ __('This link expired on :date and the client can no longer sign it. Extend the signing window below to reactivate it.', ['date' => $agreement->expires_at->format('d/m/Y H:i')]) }}</p>
+                        <p class="text-sm text-gray-600">{{ __('This link expired on :date and the client can no longer sign it. Extend the signing window below to reactivate it.', ['date' => $agreement->expires_at->format('m/d/Y H:i')]) }}</p>
                     </div>
                 @else
                     <div class="rounded-xl border border-dashed border-brand-blue-400/60 bg-brand-blue-50 p-5">
@@ -60,7 +60,7 @@
                         </div>
                         <p class="text-xs text-gray-500 mt-2">
                             {{ __('Send this link to the client so they can fill out and sign the form.') }}
-                            {{ $agreement->expires_at ? __('Expires on :date.', ['date' => $agreement->expires_at->format('d/m/Y H:i')]) : __('No expiration.') }}
+                            {{ $agreement->expires_at ? __('Expires on :date.', ['date' => $agreement->expires_at->format('m/d/Y H:i')]) : __('No expiration.') }}
                         </p>
                     </div>
                 @endif
@@ -104,7 +104,7 @@
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ __('Training Date') }}</span>
-                        <span class="text-gray-800 font-medium">{{ optional($agreement->training_date)->format('d/m/Y') ?? '—' }}</span>
+                        <span class="text-gray-800 font-medium">{{ optional($agreement->training_date)->format('m/d/Y') ?? '—' }}</span>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ __('Total') }}</span>
