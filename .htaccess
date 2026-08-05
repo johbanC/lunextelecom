@@ -1,0 +1,18 @@
+# Root .htaccess for shared hosting where the Document Root cannot be
+# pointed at /public. Blocks direct access to sensitive files/folders and
+# forwards everything else to the Laravel front controller in /public.
+
+# 1) Block direct access to sensitive top-level files
+<FilesMatch "^(\.env(\..*)?|composer\.(json|lock)|package(-lock)?\.json|package\.json|artisan|phpunit\.xml|README\.md|INSTRUCTIVO\.md|skills-lock\.json|vite\.config\.js|\.gitignore|\.gitattributes|\.editorconfig|\.npmrc)$">
+    Require all denied
+</FilesMatch>
+
+# 2) Block direct access to sensitive top-level directories
+RewriteEngine On
+RewriteRule ^(\.git|\.claude|\.agents|vendor|storage|bootstrap|database|tests|resources|routes|config|lang|node_modules|aaa)(/.*)?$ - [F,L]
+
+# 3) Forward everything else to /public, then let Laravel's own
+#    public/.htaccess route it to index.php
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{REQUEST_URI} !^/index\.php
+RewriteRule ^(.*)$ public/$1 [L]
