@@ -68,7 +68,7 @@ class AgreementController extends Controller
 
         return redirect()
             ->route('admin.agreements.show', $agreement)
-            ->with('status', 'Enlace generado correctamente.');
+            ->with('status', __('Link generated successfully.'));
     }
 
     /**
@@ -87,7 +87,7 @@ class AgreementController extends Controller
      */
     public function extend(Request $request, Agreement $agreement)
     {
-        abort_if($agreement->isSigned(), 403, 'Este formulario ya fue firmado.');
+        abort_if($agreement->isSigned(), 403, __('This form has already been signed.'));
 
         $validated = $request->validate([
             'expires_in' => 'required|in:' . implode(',', array_keys(Agreement::expirationOptions())),
@@ -99,7 +99,7 @@ class AgreementController extends Controller
 
         return redirect()
             ->route('admin.agreements.show', $agreement)
-            ->with('status', 'Vigencia del enlace actualizada.');
+            ->with('status', __('Signing window updated.'));
     }
 
     /**

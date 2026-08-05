@@ -7,6 +7,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin/agreements');
 
+Route::get('lang/{locale}', function (string $locale) {
+    if (in_array($locale, ['en', 'es'], true)) {
+        session(['locale' => $locale]);
+    }
+
+    return back();
+})->name('locale.switch');
+
 Route::middleware('auth')->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('agreements', [AgreementController::class, 'index'])->name('agreements.index');

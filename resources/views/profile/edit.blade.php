@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Mi perfil')
+@section('title', __('My profile'))
 
 @section('content')
     <div class="max-w-xl mx-auto space-y-6">

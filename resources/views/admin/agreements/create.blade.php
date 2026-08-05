@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Generar enlace')
+@section('title', __('Generate link'))
 
 @section('content')
     <div class="max-w-lg mx-auto">
@@ -10,8 +10,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                 </svg>
             </div>
-            <h1 class="text-xl font-bold text-gray-800">Generar enlace de formulario</h1>
-            <p class="text-sm text-gray-500 mt-1">Estos datos quedarán fijos y el cliente no podrá editarlos.</p>
+            <h1 class="text-xl font-bold text-gray-800">{{ __('Generate form link') }}</h1>
+            <p class="text-sm text-gray-500 mt-1">{{ __("This information will be locked and the client won't be able to edit it.") }}</p>
         </div>
 
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-6">
@@ -19,7 +19,7 @@
                 @csrf
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipo de formulario</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">{{ __('Form type') }}</label>
                     <select name="type" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
                         <option value="coam_equipment">GA COAM Equipment Inquiry</option>
                     </select>
@@ -35,26 +35,26 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Fecha</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">{{ __('Date') }}</label>
                     <input type="date" name="form_date" value="{{ old('form_date', now()->toDateString()) }}" required
                         class="w-full h-11 border border-gray-300 rounded-lg px-3 focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
                     @error('form_date') <p class="text-brand-red text-sm mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Vigencia para firmar</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">{{ __('Signing window') }}</label>
                     <select name="expires_in" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
                         @foreach ($expirationOptions as $value => $label)
                             <option value="{{ $value }}" @selected(old('expires_in', '15') == $value)>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <p class="text-xs text-gray-500 mt-1">Pasado ese tiempo, el enlace dejará de aceptar firmas (puedes extenderlo después si hace falta).</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('After that time the link will stop accepting signatures (you can extend it later if needed).') }}</p>
                     @error('expires_in') <p class="text-brand-red text-sm mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <button type="submit"
                     class="w-full bg-brand-blue text-white py-2.5 rounded-lg font-semibold shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition">
-                    Generar enlace
+                    {{ __('Generate link') }}
                 </button>
             </form>
         </div>

@@ -30,8 +30,8 @@ class PublicAgreementController extends Controller
     {
         $agreement = Agreement::where('uuid', $uuid)->firstOrFail();
 
-        abort_if($agreement->isSigned(), 403, 'Este formulario ya fue firmado.');
-        abort_if($agreement->isExpired(), 403, 'El enlace para firmar este formulario ha vencido.');
+        abort_if($agreement->isSigned(), 403, __('This form has already been signed.'));
+        abort_if($agreement->isExpired(), 403, __('The link to sign this form has expired.'));
 
         $catalog = collect(Agreement::itemCatalog($agreement->type));
 

@@ -27,6 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
         signaturePad.clear();
     });
 
+    const last4BankInput = document.getElementById('last4BankInput');
+    const authorizationDigitsInput = document.getElementById('authorizationDigitsInput');
+
+    if (last4BankInput && authorizationDigitsInput) {
+        last4BankInput.addEventListener('input', () => {
+            authorizationDigitsInput.value = last4BankInput.value;
+        });
+    }
+
     const qtyInputs = document.querySelectorAll('.qty-input');
     const grandTotalElement = document.getElementById('grandTotal');
 
@@ -52,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (e) => {
         if (signaturePad.isEmpty()) {
             e.preventDefault();
-            alert('Por favor agrega tu firma antes de enviar.');
+            alert(form.dataset.signatureRequired);
             return;
         }
 

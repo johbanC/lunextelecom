@@ -49,12 +49,12 @@ class Agreement extends Model
     public static function expirationOptions(): array
     {
         return [
-            '1' => '1 día',
-            '3' => '3 días',
-            '7' => '7 días',
-            '15' => '15 días',
-            '30' => '30 días',
-            'none' => 'Sin vencimiento',
+            '1' => __(':count day', ['count' => 1]),
+            '3' => __(':count days', ['count' => 3]),
+            '7' => __(':count days', ['count' => 7]),
+            '15' => __(':count days', ['count' => 15]),
+            '30' => __(':count days', ['count' => 30]),
+            'none' => __('No expiration'),
         ];
     }
 
@@ -75,12 +75,12 @@ class Agreement extends Model
     {
         return match ($type) {
             'coam_equipment' => [
-                ['key' => 'laptop', 'name' => 'LAPTOP', 'description' => '(Installation, Training, Scanner & Cards)', 'rate' => 329.00],
-                ['key' => 'pax_terminal', 'name' => 'PAX TERMINAL', 'description' => '(Installation, Training, Scanner & Cards)', 'rate' => 329.00],
-                ['key' => 'in_person_training', 'name' => 'IN PERSON TRAINING ONLY', 'description' => '(Includes Scanner & cards)', 'rate' => 129.00],
-                ['key' => 'remote_training', 'name' => 'REMOTE TRAINING ONLY', 'description' => '(Includes Scanner & cards) shipped', 'rate' => 79.00],
-                ['key' => 'scanner_only', 'name' => 'SCANNER ONLY', 'description' => '', 'rate' => 30.00],
-                ['key' => 'coam_cards', 'name' => 'COAM CARDS', 'description' => '', 'rate' => 0.00],
+                ['key' => 'laptop', 'name' => __('LAPTOP'), 'description' => __('(Installation, Training, Scanner & Cards)'), 'rate' => 329.00],
+                ['key' => 'pax_terminal', 'name' => __('PAX TERMINAL'), 'description' => __('(Installation, Training, Scanner & Cards)'), 'rate' => 329.00],
+                ['key' => 'in_person_training', 'name' => __('IN PERSON TRAINING ONLY'), 'description' => __('(Includes Scanner & cards)'), 'rate' => 129.00],
+                ['key' => 'remote_training', 'name' => __('REMOTE TRAINING ONLY'), 'description' => __('(Includes Scanner & cards) shipped'), 'rate' => 79.00],
+                ['key' => 'scanner_only', 'name' => __('SCANNER ONLY'), 'description' => '', 'rate' => 30.00],
+                ['key' => 'coam_cards', 'name' => __('COAM CARDS'), 'description' => '', 'rate' => 0.00],
             ],
             default => [],
         };
@@ -89,7 +89,7 @@ class Agreement extends Model
     public static function typeLabel(string $type): string
     {
         return match ($type) {
-            'coam_equipment' => 'GA COAM Equipment Inquiry',
+            'coam_equipment' => __('GA COAM Equipment Inquiry'),
             default => $type,
         };
     }

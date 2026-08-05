@@ -11,6 +11,8 @@
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 bg-[radial-gradient(circle_at_top,_var(--color-brand-blue-50),_var(--color-gray-100)_60%)]">
+            <x-locale-switcher class="mb-4" />
+
             <div>
                 <a href="/">
                     <img src="{{ asset('img/logo.png') }}" alt="Lunex Telecom" class="h-14 w-auto">
