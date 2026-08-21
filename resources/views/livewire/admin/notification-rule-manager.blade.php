@@ -9,6 +9,40 @@
         </button>
     </div>
 
+    <div class="rounded-2xl border border-brand-blue-100 bg-brand-blue-50 p-5 mb-6">
+        <div class="flex items-center gap-2 mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 shrink-0 text-brand-blue">
+                <path fill-rule="evenodd" d="M18 10A8 8 0 1 1 2 10a8 8 0 0 1 16 0ZM9 9a1 1 0 0 0 0 2v3a1 1 0 0 0 1 1h1a1 1 0 1 0 0-2v-3a1 1 0 0 0-1-1H9Zm1-4a1.25 1.25 0 1 0 0 2.5A1.25 1.25 0 0 0 10 5Z" clip-rule="evenodd" />
+            </svg>
+            <h2 class="text-sm font-bold text-brand-blue-700">{{ __('How this works') }}</h2>
+        </div>
+        <p class="text-sm text-gray-700 mb-4">
+            {{ __('Each rule means "when this event happens, notify this group". A ticket also always emails whoever it is directly assigned to, even without a rule — rules are for everyone else who should know.') }}
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Setting up a rule') }}</h3>
+                <ol class="space-y-1.5 text-sm text-gray-600 list-decimal list-inside">
+                    <li>{{ __('Event — what should trigger the notification.') }}</li>
+                    <li>{{ __('Category (optional) — leave blank to apply to every category, or pick one to limit the rule to it.') }}</li>
+                    <li>{{ __('Notify group — every member of that group gets notified.') }}</li>
+                    <li>{{ __('Channel — email, in-platform (the bell), or both.') }}</li>
+                </ol>
+            </div>
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('What each event means') }}</h3>
+                <dl class="space-y-1.5 text-sm">
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Ticket created') }}:</dt> <dd class="inline text-gray-600">{{ __('a new ticket was opened.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Status changed') }}:</dt> <dd class="inline text-gray-600">{{ __('someone changed a ticket\'s status (e.g. to Resolved).') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Reassigned (person or group)') }}:</dt> <dd class="inline text-gray-600">{{ __('the assignee or the related group changed.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('External comment added') }}:</dt> <dd class="inline text-gray-600">{{ __('someone left a comment marked "External".') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('SLA about to breach') }} / {{ __('SLA breached') }}:</dt> <dd class="inline text-gray-600">{{ __('the ticket is close to, or past, its time limit.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Form signed') }}:</dt> <dd class="inline text-gray-600">{{ __('a client signed a public form — this one has no category.') }}</dd></div>
+                </dl>
+            </div>
+        </div>
+    </div>
+
     <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
         <table class="w-full text-left text-sm min-w-[700px]">
             <thead>
