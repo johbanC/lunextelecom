@@ -3,8 +3,10 @@
 use App\Http\Controllers\Admin\AgreementController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAgreementController;
+use App\Models\Attachment;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::redirect('/', '/admin/agreements');
 
@@ -41,6 +43,12 @@ Route::middleware('auth')->group(function () {
             Route::get('{ticket}', function (Ticket $ticket) {
                 return view('admin.tickets.show', ['ticket' => $ticket]);
             })->name('show')->middleware('can:view,ticket');
+
+            Route::get('{ticket}/attachments/{attachment}', function (Ticket $ticket, Attachment $attachment) {
+                abort_unless($attachment->ticket_id === $ticket->id, 404);
+
+                return Storage::disk('local')->download($attachment->path, $attachment->original_name);
+            })->name('attachments.download')->middleware('can:view,ticket');
         });
 
         Route::get('users', function () {

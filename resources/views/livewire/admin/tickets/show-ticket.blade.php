@@ -77,6 +77,39 @@
                 </ul>
             </div>
 
+            {{-- Adjuntos --}}
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
+                <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ __('Attachments') }}</h2>
+                <ul class="space-y-2 mb-4">
+                    @forelse ($ticket->attachments as $attachment)
+                        <li class="flex items-center justify-between gap-2 text-sm border border-gray-100 rounded-lg p-3">
+                            <div class="min-w-0">
+                                <a href="{{ route('admin.tickets.attachments.download', [$ticket, $attachment]) }}" class="font-medium text-brand-blue hover:underline truncate block">{{ $attachment->original_name }}</a>
+                                <div class="text-xs text-gray-400">
+                                    {{ number_format($attachment->size / 1024, 0) }} KB &middot;
+                                    {{ __('uploaded by') }} {{ $attachment->uploader?->name ?? __('Unknown') }} &middot;
+                                    {{ $attachment->created_at->format('d/m/Y H:i') }}
+                                </div>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="text-sm text-gray-400">{{ __('No attachments yet.') }}</li>
+                    @endforelse
+                </ul>
+                @can('attach', $ticket)
+                    <form wire:submit="uploadAttachments" class="space-y-2">
+                        <input type="file" wire:model="newAttachments" multiple
+                            class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-600 file:text-xs file:font-semibold hover:file:bg-gray-200">
+                        @error('newAttachments') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
+                        @error('newAttachments.*') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
+                        <div wire:loading wire:target="newAttachments" class="text-xs text-gray-400">{{ __('Uploading…') }}</div>
+                        <button type="submit" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-brand-blue-600 transition">
+                            {{ __('Upload') }}
+                        </button>
+                    </form>
+                @endcan
+            </div>
+
             {{-- Comentarios --}}
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
                 <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ __('Comments') }}</h2>

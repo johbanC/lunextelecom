@@ -35,6 +35,7 @@ class TicketEvent extends Model
             'assigned' => __('assigned the ticket to :to', ['to' => $this->userLabel($payload['to'] ?? null)]),
             'reassigned' => $this->describeReassigned($payload),
             'comment_added' => __('added a comment'),
+            'attachment_added' => trans_choice('{1} attached 1 file|[2,*] attached :count files', $payload['count'] ?? 1, ['count' => $payload['count'] ?? 1]),
             default => str_replace('_', ' ', $this->type),
         };
     }

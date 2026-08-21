@@ -8,16 +8,23 @@ use App\Models\User;
 use App\Notifications\TicketEventNotification;
 use App\Services\TicketNotifier;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class ShowTicket extends Component
 {
+    use WithFileUploads;
+
     public Ticket $ticket;
 
     public string $newComment = '';
 
     public string $commentVisibility = 'internal';
+
+    /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
+    public array $newAttachments = [];
 
     public function mount(Ticket $ticket): void
     {
@@ -142,11 +149,43 @@ class ShowTicket extends Component
         $this->ticket->refresh();
     }
 
+    public function uploadAttachments(): void
+    {
+        $this->authorize('attach', $this->ticket);
+
+        $this->validate([
+            'newAttachments' => ['required', 'array', 'max:5'],
+            'newAttachments.*' => ['file', 'max:10240'],
+        ]);
+
+        foreach ($this->newAttachments as $file) {
+            $path = $file->store('attachments/'.$this->ticket->id, 'local');
+
+            $this->ticket->attachments()->create([
+                'uploaded_by' => Auth::id(),
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+        }
+
+        $this->ticket->events()->create([
+            'user_id' => Auth::id(),
+            'type' => 'attachment_added',
+            'payload' => ['count' => count($this->newAttachments)],
+        ]);
+
+        $this->newAttachments = [];
+        $this->ticket->refresh();
+    }
+
     public function render(): View
     {
         $this->ticket->load([
             'ticketType', 'category', 'issue', 'assignee', 'creator', 'relatedToGroup',
             'extraCustomers', 'fieldValues.fieldDefinition', 'events.user', 'comments.user',
+            'attachments.uploader',
         ]);
 
         $groups = Group::where('is_active', true)->orderBy('name')->get()
