@@ -153,6 +153,16 @@ class ShowTicket extends Component
             'type' => 'comment_added',
         ]);
 
+        if ($this->commentVisibility === 'external') {
+            TicketNotifier::notify(
+                $this->ticket,
+                TicketEventNotification::EVENT_COMMENT_ADDED,
+                Auth::user(),
+                ['comment' => $this->newComment],
+                directAssigneeId: $this->ticket->assignee_id,
+            );
+        }
+
         $this->newComment = '';
         $this->ticket->refresh();
     }
@@ -186,6 +196,11 @@ class ShowTicket extends Component
 
         $this->newAttachments = [];
         $this->ticket->refresh();
+    }
+
+    public function updatedFieldValuesForm(mixed $value, string $key): void
+    {
+        $this->resetErrorBag("fieldValuesForm.{$key}");
     }
 
     public function editFields(): void

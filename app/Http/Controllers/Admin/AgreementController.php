@@ -55,7 +55,7 @@ class AgreementController extends Controller
             'type' => 'required|string|in:coam_equipment',
             'account_id' => 'required|string|max:50',
             'form_date' => 'required|date',
-            'expires_in' => 'required|in:' . implode(',', array_keys(Agreement::expirationOptions())),
+            'expires_in' => 'required|in:'.implode(',', array_keys(Agreement::expirationOptions())),
         ]);
 
         $agreement = Agreement::create([
@@ -90,7 +90,7 @@ class AgreementController extends Controller
         abort_if($agreement->isSigned(), 403, __('This form has already been signed.'));
 
         $validated = $request->validate([
-            'expires_in' => 'required|in:' . implode(',', array_keys(Agreement::expirationOptions())),
+            'expires_in' => 'required|in:'.implode(',', array_keys(Agreement::expirationOptions())),
         ]);
 
         $agreement->update([
@@ -114,7 +114,7 @@ class AgreementController extends Controller
         $signatureDataUri = null;
         if ($agreement->signature_path && Storage::disk('public')->exists($agreement->signature_path)) {
             $contents = Storage::disk('public')->get($agreement->signature_path);
-            $signatureDataUri = 'data:image/png;base64,' . base64_encode($contents);
+            $signatureDataUri = 'data:image/png;base64,'.base64_encode($contents);
         }
 
         $pdf = Pdf::loadView('agreements.pdf', ['agreement' => $agreement, 'signatureDataUri' => $signatureDataUri])

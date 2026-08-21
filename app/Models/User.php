@@ -35,7 +35,7 @@ class User extends Authenticatable
     }
 
     /**
-     * @return BelongsToMany<\App\Models\Group, $this>
+     * @return BelongsToMany<Group, $this>
      */
     public function groups(): BelongsToMany
     {
@@ -45,7 +45,7 @@ class User extends Authenticatable
     }
 
     /**
-     * @return HasMany<\App\Models\Ticket, $this>
+     * @return HasMany<Ticket, $this>
      */
     public function assignedTickets(): HasMany
     {
@@ -53,7 +53,7 @@ class User extends Authenticatable
     }
 
     /**
-     * @return HasMany<\App\Models\Ticket, $this>
+     * @return HasMany<Ticket, $this>
      */
     public function createdTickets(): HasMany
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agreement;
+use App\Services\AgreementNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -91,6 +92,8 @@ class PublicAgreementController extends Controller
             'status' => 'signed',
             'signed_at' => now(),
         ]);
+
+        AgreementNotifier::notifySigned($agreement->fresh());
 
         return redirect()->route('public.agreements.thanks', $agreement->uuid);
     }

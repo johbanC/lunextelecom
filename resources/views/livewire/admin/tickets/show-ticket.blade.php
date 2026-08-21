@@ -149,10 +149,15 @@
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition"></textarea>
                         @error('newComment') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
                         <div class="flex items-center justify-between">
-                            <select wire:model="commentVisibility" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                                <option value="internal">{{ __('Internal') }}</option>
-                                <option value="external">{{ __('External') }}</option>
-                            </select>
+                            <div>
+                                <select wire:model.live="commentVisibility" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                                    <option value="internal">{{ __('Internal') }}</option>
+                                    <option value="external">{{ __('External') }}</option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    {{ $commentVisibility === 'external' ? __('Sends an email to the group/assignee.') : __('Stays in the platform only, no email is sent.') }}
+                                </p>
+                            </div>
                             <button type="submit" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-brand-blue-600 transition">
                                 {{ __('Comment') }}
                             </button>
@@ -266,7 +271,7 @@
                                         <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1.5">
                                             @foreach ($field->options as $option)
                                                 <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
-                                                    <input type="checkbox" wire:model="fieldValuesForm.{{ $field->id }}" value="{{ $option->value }}"
+                                                    <input type="checkbox" wire:model.live="fieldValuesForm.{{ $field->id }}" value="{{ $option->value }}"
                                                         class="rounded text-brand-blue focus:ring-brand-blue">
                                                     {{ $option->value }}
                                                 </label>

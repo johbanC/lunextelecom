@@ -79,12 +79,12 @@ class TicketEvent extends Model
 
     protected function userLabel(?int $userId): string
     {
-        return $userId ? (\App\Models\User::find($userId)?->name ?? __('Unknown user')) : __('Unassigned');
+        return $userId ? (User::find($userId)?->name ?? __('Unknown user')) : __('Unassigned');
     }
 
     protected function groupLabel(?int $groupId): string
     {
-        return $groupId ? (\App\Models\Group::find($groupId)?->name ?? __('Unknown group')) : __('Unassigned group');
+        return $groupId ? (Group::find($groupId)?->name ?? __('Unknown group')) : __('Unassigned group');
     }
 
     /**

@@ -179,7 +179,7 @@
                                     <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1.5">
                                         @foreach ($field->options as $option)
                                             <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
-                                                <input type="checkbox" wire:model="fieldValues.{{ $field->id }}" value="{{ $option->value }}"
+                                                <input type="checkbox" wire:model.live="fieldValues.{{ $field->id }}" value="{{ $option->value }}"
                                                     class="rounded text-brand-blue focus:ring-brand-blue">
                                                 {{ $option->value }}
                                             </label>
@@ -198,6 +198,23 @@
                 </div>
             </div>
         @endif
+
+        {{-- Adjuntos --}}
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
+            <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-4">{{ __('Attachments') }}</h2>
+            <input type="file" wire:model="newAttachments" multiple
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-600 file:text-xs file:font-semibold hover:file:bg-gray-200">
+            @error('newAttachments') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
+            @error('newAttachments.*') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
+            <div wire:loading wire:target="newAttachments" class="text-xs text-gray-400 mt-1">{{ __('Uploading…') }}</div>
+            @if ($newAttachments)
+                <ul class="mt-2 space-y-1">
+                    @foreach ($newAttachments as $file)
+                        <li class="text-xs text-gray-500">{{ $file->getClientOriginalName() }}</li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
 
         <div class="flex justify-end">
             <button type="submit"

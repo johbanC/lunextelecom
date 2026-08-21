@@ -61,7 +61,7 @@ class NotificationRuleManager extends Component
         $this->authorize('notification_rules.manage');
 
         $data = $this->validate([
-            'form.event' => ['required', 'in:created,status_changed,reassigned,sla_warning,sla_breached'],
+            'form.event' => ['required', 'in:created,status_changed,reassigned,comment_added,sla_warning,sla_breached,agreement_signed'],
             'form.category_id' => ['nullable', 'exists:categories,id'],
             'form.group_id' => ['required', 'exists:groups,id'],
             'form.channel' => ['required', 'in:email,platform,both'],

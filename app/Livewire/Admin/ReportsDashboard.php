@@ -4,7 +4,6 @@ namespace App\Livewire\Admin;
 
 use App\Models\Category;
 use App\Models\Ticket;
-use App\Models\User;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

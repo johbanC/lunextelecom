@@ -8,7 +8,6 @@ use App\Models\Group;
 use App\Models\Issue;
 use App\Models\Retailer;
 use App\Models\Ticket;
-use App\Models\TicketEvent;
 use App\Models\TicketType;
 use App\Models\User;
 use App\Notifications\TicketEventNotification;
@@ -17,9 +16,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 class CreateTicket extends Component
 {
+    use WithFileUploads;
+
     public string $ticketTypeCode = TicketType::RETAILER;
 
     public ?int $categoryId = null;
@@ -42,6 +45,9 @@ class CreateTicket extends Component
 
     /** @var array<int, array{full_name: string, phone: string}> */
     public array $extraCustomers = [];
+
+    /** @var array<int, TemporaryUploadedFile> */
+    public array $newAttachments = [];
 
     public function mount(): void
     {
@@ -80,6 +86,11 @@ class CreateTicket extends Component
         foreach ($this->currentIssue()?->fieldDefinitions ?? [] as $field) {
             $this->fieldValues[$field->id] = $field->isMultiValue() ? [] : '';
         }
+    }
+
+    public function updatedFieldValues(mixed $value, string $key): void
+    {
+        $this->resetErrorBag("fieldValues.{$key}");
     }
 
     public function addExtraCustomer(): void
@@ -136,6 +147,9 @@ class CreateTicket extends Component
             $rules['extraCustomers.*.full_name'] = ['required', 'string', 'max:255'];
             $rules['extraCustomers.*.phone'] = ['nullable', 'string', 'max:50'];
         }
+
+        $rules['newAttachments'] = ['nullable', 'array', 'max:5'];
+        $rules['newAttachments.*'] = ['file', 'max:10240'];
 
         return $rules;
     }
@@ -205,6 +219,18 @@ class CreateTicket extends Component
 
             return $ticket;
         });
+
+        foreach ($this->newAttachments as $file) {
+            $path = $file->store('attachments/'.$ticket->id, 'local');
+
+            $ticket->attachments()->create([
+                'uploaded_by' => Auth::id(),
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+        }
 
         TicketNotifier::notify(
             $ticket,

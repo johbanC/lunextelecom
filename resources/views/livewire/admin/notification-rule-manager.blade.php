@@ -24,7 +24,16 @@
             <tbody class="divide-y divide-gray-100">
                 @forelse ($rules as $rule)
                     <tr class="{{ ! $rule->is_active ? 'opacity-50' : '' }}">
-                        <td class="p-4 font-medium text-gray-700 capitalize">{{ str_replace('_', ' ', $rule->event) }}</td>
+                        <td class="p-4 font-medium text-gray-700">{{ match ($rule->event) {
+                            'created' => __('Ticket created'),
+                            'status_changed' => __('Status changed'),
+                            'reassigned' => __('Reassigned (person or group)'),
+                            'comment_added' => __('External comment added'),
+                            'sla_warning' => __('SLA about to breach'),
+                            'sla_breached' => __('SLA breached'),
+                            'agreement_signed' => __('Form signed'),
+                            default => $rule->event,
+                        } }}</td>
                         <td class="p-4 text-gray-600">{{ $rule->category->name ?? __('All categories') }}</td>
                         <td class="p-4 text-gray-600">{{ $rule->group->name ?? '—' }}</td>
                         <td class="p-4 text-gray-600 capitalize">{{ $rule->channel }}</td>
@@ -63,14 +72,13 @@
                             <option value="created">{{ __('Ticket created') }}</option>
                             <option value="status_changed">{{ __('Status changed') }}</option>
                             <option value="reassigned">{{ __('Reassigned (person or group)') }}</option>
+                            <option value="comment_added">{{ __('External comment added') }}</option>
                             <option value="sla_warning">{{ __('SLA about to breach') }}</option>
                             <option value="sla_breached">{{ __('SLA breached') }}</option>
+                            <option value="agreement_signed">{{ __('Form signed') }}</option>
                         </select>
-                        @if (in_array($form['event'] ?? null, ['sla_warning', 'sla_breached'], true))
-                            <p class="text-xs text-amber-600 mt-1">{{ __('Note: the scheduled SLA check is not wired up yet, so this rule will not fire until that job exists.') }}</p>
-                        @endif
                     </div>
-                    <div>
+                    <div @class(['hidden' => ($form['event'] ?? null) === 'agreement_signed'])>
                         <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Category (optional)') }}</label>
                         <select wire:model="form.category_id" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm bg-white focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
                             <option value="">{{ __('All categories') }}</option>
@@ -78,6 +86,9 @@
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
+                        @if (($form['event'] ?? null) === 'agreement_signed')
+                            <p class="text-xs text-gray-400 mt-1">{{ __('Forms have no category — this rule applies to all signed forms.') }}</p>
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Notify group') }}</label>
