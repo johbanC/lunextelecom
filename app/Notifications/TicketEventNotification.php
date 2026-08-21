@@ -87,17 +87,88 @@ class TicketEventNotification extends Notification
         ];
     }
 
+    /**
+     * Subject con el patrón heredado del sistema viejo (docs/
+     * Lunex_Ticket_System_Discovery_MVP.docx sección 4 — "crítica de
+     * preservar"): [[GRUPO]] ISSUE / CÓDIGO / TELÉFONO / #TICKET. Sirve
+     * como identificador de hilo: la creación lo manda "limpio", cualquier
+     * evento posterior lo reenvía con "Re:", y al pasar a Resolved/Closed
+     * se antepone "done --" igual que hacía el equipo a mano.
+     */
     protected function subject(): string
     {
-        return match ($this->event) {
-            self::EVENT_CREATED => "New ticket {$this->ticket->ticket_number} ({$this->ticket->issue->name})",
-            self::EVENT_STATUS_CHANGED => "Ticket {$this->ticket->ticket_number} changed status",
-            self::EVENT_REASSIGNED => "Ticket {$this->ticket->ticket_number} was reassigned",
-            self::EVENT_COMMENT_ADDED => "New comment on ticket {$this->ticket->ticket_number}",
-            self::EVENT_SLA_WARNING => "Ticket {$this->ticket->ticket_number} is close to its SLA",
-            self::EVENT_SLA_BREACHED => "Ticket {$this->ticket->ticket_number} breached its SLA",
-            default => "Ticket {$this->ticket->ticket_number} updated",
-        };
+        $base = $this->baseSubject();
+
+        if ($this->event === self::EVENT_CREATED) {
+            return $base;
+        }
+
+        if ($this->event === self::EVENT_STATUS_CHANGED
+            && in_array($this->payload['to'] ?? null, [Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED], true)) {
+            return "done -- Re: {$base}";
+        }
+
+        return "Re: {$base}";
+    }
+
+    protected function baseSubject(): string
+    {
+        $this->ticket->loadMissing(['relatedToGroup', 'issue']);
+
+        $group = strtoupper($this->ticket->relatedToGroup?->name ?? 'Unassigned');
+        $issue = strtoupper($this->ticket->issue->name);
+
+        $segments = array_filter([
+            $this->subjectCode(),
+            $this->subjectPhone(),
+            $this->ticket->ticket_number,
+        ], fn (?string $value) => filled($value));
+
+        return "[[{$group}]] {$issue} / ".implode(' / ', $segments);
+    }
+
+    /**
+     * "CÓDIGO DEL RETAILER" del subject original — para tickets de Retailer
+     * es el retailer_code; para Customer no existe ese concepto, así que se
+     * usa el identificador más parecido disponible en el encabezado.
+     */
+    protected function subjectCode(): ?string
+    {
+        return $this->ticket->header['retailer_code']
+            ?? $this->ticket->header['tx_id']
+            ?? $this->ticket->header['full_name']
+            ?? null;
+    }
+
+    /**
+     * "TELÉFONO DE CONTACTO" del subject original — viene directo del
+     * encabezado en tickets de Customer; en Retailer no hay un campo fijo
+     * para esto, así que se busca entre los campos dinámicos del issue
+     * (ej. "Caller #") uno que claramente sea un teléfono de contacto.
+     */
+    protected function subjectPhone(): ?string
+    {
+        if (filled($this->ticket->header['phone'] ?? null)) {
+            return $this->ticket->header['phone'];
+        }
+
+        $this->ticket->loadMissing('fieldValues.fieldDefinition');
+
+        foreach ($this->ticket->fieldValues as $fieldValue) {
+            $label = $fieldValue->fieldDefinition->label;
+
+            if (stripos($label, 'carrier') !== false) {
+                continue;
+            }
+
+            if (stripos($label, 'caller #') !== false || stripos($label, 'phone number') !== false || stripos($label, 'contact phone') !== false) {
+                $value = $fieldValue->decodedValue();
+
+                return is_array($value) ? implode(', ', $value) : $value;
+            }
+        }
+
+        return null;
     }
 
     protected function line(): string
