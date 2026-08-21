@@ -14,6 +14,31 @@
         @endif
     </div>
 
+    <x-how-it-works>
+        <p class="text-sm text-gray-700 mb-4">
+            {{ __('These numbers are scoped to your access level automatically — an Asesor sees their own tickets, a Líder de equipo sees their group\'s, and Director/Administración and Admin see everything.') }}
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Filters and export') }}</h3>
+                <ol class="space-y-1.5 text-sm text-gray-600 list-decimal list-inside">
+                    <li>{{ __('Date range and ticket type — narrow the numbers to a period or to Retailer/Customer only.') }}</li>
+                    <li>{{ __('Every chart and total below updates live as you change the filters.') }}</li>
+                    <li>{{ __('Export CSV downloads the currently filtered list of tickets.') }}</li>
+                </ol>
+            </div>
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('SLA colors') }}</h3>
+                <dl class="space-y-1.5 text-sm">
+                    <div><dt class="inline font-semibold text-emerald-700">{{ __('On time') }}:</dt> <dd class="inline text-gray-600">{{ __('well within the category\'s time limit.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-amber-700">{{ __('Due soon') }}:</dt> <dd class="inline text-gray-600">{{ __('approaching the limit.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-brand-red">{{ __('Overdue (red SLA)') }}:</dt> <dd class="inline text-gray-600">{{ __('past the limit and needs attention.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Done') }}:</dt> <dd class="inline text-gray-600">{{ __('resolved or closed — no longer counts against SLA.') }}</dd></div>
+                </dl>
+            </div>
+        </div>
+    </x-how-it-works>
+
     <div class="flex flex-wrap items-end gap-3 mb-6">
         <div>
             <label class="block text-[11px] text-gray-400 mb-0.5">{{ __('From') }}</label>

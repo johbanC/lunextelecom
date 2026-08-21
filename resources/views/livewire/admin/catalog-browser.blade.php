@@ -15,6 +15,32 @@
         </div>
     </div>
 
+    <x-how-it-works>
+        <p class="text-sm text-gray-700 mb-4">
+            {{ __('The catalog controls what agents see when they open a ticket. It has three levels, and the field set on a ticket always depends on the Issue — never the Category.') }}
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('The three levels') }}</h3>
+                <ol class="space-y-1.5 text-sm text-gray-600 list-decimal list-inside">
+                    <li>{{ __('Category — the top-level grouping (e.g. "R Account inquiry"). Also sets the default group and SLA days.') }}</li>
+                    <li>{{ __('Issue — the specific reason for the ticket, inside a category (e.g. "Password Reset"). This is where the field set is actually defined.') }}</li>
+                    <li>{{ __('Field — one question the agent fills out inside an issue (label, type, required, help text, options).') }}</li>
+                </ol>
+            </div>
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Field types') }}</h3>
+                <dl class="space-y-1.5 text-sm">
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Text') }} / {{ __('Textarea') }}:</dt> <dd class="inline text-gray-600">{{ __('free typing, one line or several.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Select') }} / {{ __('Radio (single)') }}:</dt> <dd class="inline text-gray-600">{{ __('pick exactly one option.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Checkbox (multiple)') }}:</dt> <dd class="inline text-gray-600">{{ __('pick any number of options.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Pick N') }}:</dt> <dd class="inline text-gray-600">{{ __('like checkboxes, but must pick exactly the configured count.') }}</dd></div>
+                </dl>
+                <p class="text-xs text-gray-500 mt-3">{{ __('A field that already has answers on real tickets can\'t be deleted — deactivate the issue instead if it\'s no longer used.') }}</p>
+            </div>
+        </div>
+    </x-how-it-works>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Categorías --}}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">

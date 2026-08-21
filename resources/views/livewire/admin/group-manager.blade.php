@@ -9,6 +9,30 @@
         </button>
     </div>
 
+    <x-how-it-works>
+        <p class="text-sm text-gray-700 mb-4">
+            {{ __('A group is a team tickets get routed to — "Related to" in the ticket form. Anyone in the group can pick up and resolve a ticket routed to it.') }}
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Setting up a group') }}</h3>
+                <ol class="space-y-1.5 text-sm text-gray-600 list-decimal list-inside">
+                    <li>{{ __('Applies to — which ticket forms (Retailer, Customer, or both) offer this group as an option.') }}</li>
+                    <li>{{ __('Add members — anyone with an account can be added, and can belong to more than one group.') }}</li>
+                    <li>{{ __('Set each member as Leader or Member — see the roles below.') }}</li>
+                </ol>
+            </div>
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Leader vs. Member') }}</h3>
+                <dl class="space-y-1.5 text-sm">
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Leader') }}:</dt> <dd class="inline text-gray-600">{{ __('sees and can reassign every ticket routed to the group.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Member') }}:</dt> <dd class="inline text-gray-600">{{ __('only sees the tickets assigned to them.') }}</dd></div>
+                </dl>
+                <p class="text-xs text-gray-500 mt-3">{{ __('This connects to notification rules too: a rule that "notifies group" alerts every member of it.') }}</p>
+            </div>
+        </div>
+    </x-how-it-works>
+
     <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
         <table class="w-full text-left text-sm min-w-[600px]">
             <thead>

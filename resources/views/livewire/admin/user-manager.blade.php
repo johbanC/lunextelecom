@@ -9,6 +9,31 @@
         </button>
     </div>
 
+    <x-how-it-works>
+        <p class="text-sm text-gray-700 mb-4">
+            {{ __('New accounts never get a password set for them — they get an email to choose their own, and accounts are never deleted (they may have tickets linked to them), only deactivated.') }}
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Creating a user') }}</h3>
+                <ol class="space-y-1.5 text-sm text-gray-600 list-decimal list-inside">
+                    <li>{{ __('Name and email — the email receives the password setup link.') }}</li>
+                    <li>{{ __('Role — controls what they can see and do (see below).') }}</li>
+                    <li>{{ __('Send setup email — the user clicks the link to choose their own password.') }}</li>
+                </ol>
+            </div>
+            <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Roles, from least to most access') }}</h3>
+                <dl class="space-y-1.5 text-sm">
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Asesor') }}:</dt> <dd class="inline text-gray-600">{{ __('creates and works their own tickets.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Líder de equipo') }}:</dt> <dd class="inline text-gray-600">{{ __('the above, plus sees and reassigns their group\'s tickets and its reports.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Director/Administración') }}:</dt> <dd class="inline text-gray-600">{{ __('the above, plus every ticket, group and the full reports.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Admin') }}:</dt> <dd class="inline text-gray-600">{{ __('the above, plus manages the catalog, groups, users and notification rules.') }}</dd></div>
+                </dl>
+            </div>
+        </div>
+    </x-how-it-works>
+
     <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
         <table class="w-full text-left text-sm min-w-[700px]">
             <thead>
