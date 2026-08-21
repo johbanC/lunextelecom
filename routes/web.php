@@ -46,6 +46,10 @@ Route::middleware('auth')->group(function () {
         Route::get('users', function () {
             return view('admin.users.index');
         })->name('users.index')->middleware('can:users.manage');
+
+        Route::get('groups', function () {
+            return view('admin.groups.index');
+        })->name('groups.index')->middleware('can:groups.manage');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
