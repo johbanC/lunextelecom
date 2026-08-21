@@ -69,10 +69,16 @@ class Ticket extends Model
     }
 
     /**
-     * Umbral del semáforo de tiempo: green | yellow | red.
+     * Umbral del semáforo de tiempo: green | yellow | red | done.
+     * Una vez resuelto/cerrado ya no hay nada pendiente, así que el ticket
+     * deja de acumular alerta (si no, se vería "rojo" para siempre).
      */
     public function slaStatus(): string
     {
+        if (in_array($this->status, [self::STATUS_RESOLVED, self::STATUS_CLOSED], true)) {
+            return 'done';
+        }
+
         $days = $this->sla_status_since->diffInDays(now());
         $category = $this->category;
 

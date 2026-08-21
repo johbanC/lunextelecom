@@ -3,16 +3,7 @@
         <div>
             <div class="flex items-center gap-3">
                 <h1 class="text-xl font-bold text-gray-800">{{ $ticket->ticket_number }}</h1>
-                @php($sla = $ticket->slaStatus())
-                <span @class([
-                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold',
-                    'bg-emerald-100 text-emerald-700' => $sla === 'green',
-                    'bg-amber-100 text-amber-700' => $sla === 'yellow',
-                    'bg-red-100 text-red-700' => $sla === 'red',
-                ])>
-                    <span @class(['size-1.5 rounded-full', 'bg-emerald-500' => $sla === 'green', 'bg-amber-500' => $sla === 'yellow', 'bg-red-500' => $sla === 'red'])></span>
-                    SLA {{ ucfirst($sla) }}
-                </span>
+                <x-sla-chip :status="$ticket->slaStatus()" />
             </div>
             <p class="text-sm text-gray-500 mt-1">{{ $ticket->ticketType->name }} &middot; {{ $ticket->category->name }} &middot; {{ $ticket->issue->name }}</p>
         </div>

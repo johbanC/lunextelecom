@@ -19,6 +19,8 @@ class TicketList extends Component
 
     public string $categoryFilter = '';
 
+    public string $slaFilter = '';
+
     public function mount(): void
     {
         $this->authorize('viewAny', Ticket::class);
@@ -51,7 +53,27 @@ class TicketList extends Component
             ->when($this->ticketTypeFilter, fn ($q) => $q->whereHas('ticketType', fn ($t) => $t->where('code', $this->ticketTypeFilter)))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->categoryFilter, fn ($q) => $q->where('category_id', $this->categoryFilter))
-            ->latest()
+            ->when($this->slaFilter, function ($query) {
+                $query->select('tickets.*')->join('categories', 'categories.id', '=', 'tickets.category_id');
+
+                if ($this->slaFilter === 'done') {
+                    $query->whereIn('tickets.status', [Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED]);
+
+                    return;
+                }
+
+                $query->whereNotIn('tickets.status', [Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED]);
+                $elapsedDays = 'TIMESTAMPDIFF(DAY, tickets.sla_status_since, NOW())';
+
+                match ($this->slaFilter) {
+                    'red' => $query->whereRaw("{$elapsedDays} >= categories.sla_red_days"),
+                    'yellow' => $query->whereRaw("{$elapsedDays} >= categories.sla_yellow_days")
+                        ->whereRaw("{$elapsedDays} < categories.sla_red_days"),
+                    'green' => $query->whereRaw("{$elapsedDays} < categories.sla_yellow_days"),
+                    default => null,
+                };
+            })
+            ->latest('tickets.created_at')
             ->paginate(15);
 
         return view('livewire.admin.tickets.ticket-list', [

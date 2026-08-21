@@ -31,6 +31,13 @@
                 <option value="{{ $category->id }}">{{ $category->name }}</option>
             @endforeach
         </select>
+        <select wire:model.live="slaFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+            <option value="">{{ __('All SLA') }}</option>
+            <option value="red">{{ __('Overdue') }}</option>
+            <option value="yellow">{{ __('Due soon') }}</option>
+            <option value="green">{{ __('On time') }}</option>
+            <option value="done">{{ __('Done') }}</option>
+        </select>
     </div>
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
@@ -41,6 +48,7 @@
                     <th class="p-4 font-semibold">{{ __('Type') }}</th>
                     <th class="p-4 font-semibold">{{ __('Category / Issue') }}</th>
                     <th class="p-4 font-semibold">{{ __('Status') }}</th>
+                    <th class="p-4 font-semibold">{{ __('Priority') }}</th>
                     <th class="p-4 font-semibold">SLA</th>
                     <th class="p-4 font-semibold">{{ __('Assignee') }}</th>
                     <th class="p-4 font-semibold">{{ __('Created') }}</th>
@@ -65,28 +73,22 @@
                             </span>
                         </td>
                         <td class="p-4">
-                            @php($sla = $ticket->slaStatus())
                             <span @class([
-                                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold',
-                                'bg-emerald-100 text-emerald-700' => $sla === 'green',
-                                'bg-amber-100 text-amber-700' => $sla === 'yellow',
-                                'bg-red-100 text-red-700' => $sla === 'red',
-                            ])>
-                                <span @class([
-                                    'size-1.5 rounded-full',
-                                    'bg-emerald-500' => $sla === 'green',
-                                    'bg-amber-500' => $sla === 'yellow',
-                                    'bg-red-500' => $sla === 'red',
-                                ])></span>
-                                {{ ucfirst($sla) }}
-                            </span>
+                                'text-xs font-bold capitalize',
+                                'text-brand-red' => $ticket->priority === 'urgent',
+                                'text-amber-600' => $ticket->priority === 'high',
+                                'text-gray-500' => in_array($ticket->priority, ['normal', 'low'], true),
+                            ])>{{ $ticket->priority }}</span>
+                        </td>
+                        <td class="p-4">
+                            <x-sla-chip :status="$ticket->slaStatus()" />
                         </td>
                         <td class="p-4 text-gray-600">{{ $ticket->assignee?->name ?? '—' }}</td>
                         <td class="p-4 text-gray-500">{{ $ticket->created_at->format('d/m/Y H:i') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-10 text-center text-gray-400">{{ __('No tickets yet.') }}</td>
+                        <td colspan="8" class="p-10 text-center text-gray-400">{{ __('No tickets yet.') }}</td>
                     </tr>
                 @endforelse
             </tbody>
