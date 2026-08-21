@@ -88,8 +88,14 @@ class CreateTicket extends Component
         }
     }
 
-    public function updatedFieldValues(mixed $value, string $key): void
+    public function updatedFieldValues(mixed $value, ?string $key = null): void
     {
+        if ($key === null) {
+            $this->resetErrorBag();
+
+            return;
+        }
+
         $this->resetErrorBag("fieldValues.{$key}");
     }
 

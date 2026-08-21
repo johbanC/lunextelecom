@@ -198,8 +198,14 @@ class ShowTicket extends Component
         $this->ticket->refresh();
     }
 
-    public function updatedFieldValuesForm(mixed $value, string $key): void
+    public function updatedFieldValuesForm(mixed $value, ?string $key = null): void
     {
+        if ($key === null) {
+            $this->resetErrorBag();
+
+            return;
+        }
+
         $this->resetErrorBag("fieldValuesForm.{$key}");
     }
 
