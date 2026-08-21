@@ -15,6 +15,11 @@ use Illuminate\Notifications\Notification;
  * según NotificationRule. El correo incluye una tarjeta con los datos del
  * ticket y la firma de quien generó el evento, para que quien lo reciba
  * entienda de qué se trata sin tener que entrar a la plataforma.
+ *
+ * El texto del evento (subject/line, usado tanto en el correo como en la
+ * notificación de campana) siempre está en inglés, sin importar el idioma
+ * que tenga activo quien disparó el evento — es el idioma de trabajo
+ * interno del equipo, igual que el resto de datos que persiste el sistema.
  */
 class TicketEventNotification extends Notification
 {
@@ -57,10 +62,10 @@ class TicketEventNotification extends Notification
         return (new MailMessage)
             ->subject($this->subject())
             ->view('emails.branded', [
-                'intro' => __('Hi :name,', ['name' => $notifiable->name]).' '.$this->line(),
+                'intro' => "Hi {$notifiable->name}, ".$this->line(),
                 'details' => $this->details(),
                 'note' => $this->note(),
-                'ctaLabel' => __('View ticket'),
+                'ctaLabel' => 'View ticket',
                 'ctaUrl' => route('admin.tickets.show', $this->ticket),
                 'signatureName' => $this->actor?->name,
                 'signatureRole' => $this->signatureRole(),
@@ -85,52 +90,32 @@ class TicketEventNotification extends Notification
     protected function subject(): string
     {
         return match ($this->event) {
-            self::EVENT_CREATED => __('New ticket :number (:issue)', ['number' => $this->ticket->ticket_number, 'issue' => $this->ticket->issue->name]),
-            self::EVENT_STATUS_CHANGED => __('Ticket :number changed status', ['number' => $this->ticket->ticket_number]),
-            self::EVENT_REASSIGNED => __('Ticket :number was reassigned', ['number' => $this->ticket->ticket_number]),
-            self::EVENT_COMMENT_ADDED => __('New comment on ticket :number', ['number' => $this->ticket->ticket_number]),
-            self::EVENT_SLA_WARNING => __('Ticket :number is close to its SLA', ['number' => $this->ticket->ticket_number]),
-            self::EVENT_SLA_BREACHED => __('Ticket :number breached its SLA', ['number' => $this->ticket->ticket_number]),
-            default => __('Ticket :number updated', ['number' => $this->ticket->ticket_number]),
+            self::EVENT_CREATED => "New ticket {$this->ticket->ticket_number} ({$this->ticket->issue->name})",
+            self::EVENT_STATUS_CHANGED => "Ticket {$this->ticket->ticket_number} changed status",
+            self::EVENT_REASSIGNED => "Ticket {$this->ticket->ticket_number} was reassigned",
+            self::EVENT_COMMENT_ADDED => "New comment on ticket {$this->ticket->ticket_number}",
+            self::EVENT_SLA_WARNING => "Ticket {$this->ticket->ticket_number} is close to its SLA",
+            self::EVENT_SLA_BREACHED => "Ticket {$this->ticket->ticket_number} breached its SLA",
+            default => "Ticket {$this->ticket->ticket_number} updated",
         };
     }
 
     protected function line(): string
     {
-        $actorName = $this->actor?->name ?? __('System');
+        $actorName = $this->actor?->name ?? 'System';
+        $number = $this->ticket->ticket_number;
 
         return match ($this->event) {
-            self::EVENT_CREATED => __(':actor created ticket :number (:issue).', [
-                'actor' => $actorName,
-                'number' => $this->ticket->ticket_number,
-                'issue' => $this->ticket->issue->name,
-            ]),
-            self::EVENT_STATUS_CHANGED => __(':actor changed ticket :number from :from to :to.', [
-                'actor' => $actorName,
-                'number' => $this->ticket->ticket_number,
-                'from' => self::statusLabel($this->payload['from'] ?? ''),
-                'to' => self::statusLabel($this->payload['to'] ?? ''),
-            ]),
-            self::EVENT_REASSIGNED => __(':actor assigned ticket :number to :assignee.', [
-                'actor' => $actorName,
-                'number' => $this->ticket->ticket_number,
-                'assignee' => $this->payload['assignee_name'] ?? __('nobody'),
-            ]),
-            self::EVENT_COMMENT_ADDED => __(':actor added a comment on ticket :number.', [
-                'actor' => $actorName,
-                'number' => $this->ticket->ticket_number,
-            ]),
-            self::EVENT_SLA_WARNING => __('Ticket :number (:issue) has been open for :days days and is approaching its SLA limit.', [
-                'number' => $this->ticket->ticket_number,
-                'issue' => $this->ticket->issue->name,
-                'days' => $this->payload['sla_days'] ?? '?',
-            ]),
-            self::EVENT_SLA_BREACHED => __('Ticket :number (:issue) has passed its :days-day SLA limit and needs attention.', [
-                'number' => $this->ticket->ticket_number,
-                'issue' => $this->ticket->issue->name,
-                'days' => $this->payload['sla_days'] ?? '?',
-            ]),
-            default => __('Ticket :number was updated.', ['number' => $this->ticket->ticket_number]),
+            self::EVENT_CREATED => "{$actorName} created ticket {$number} ({$this->ticket->issue->name}).",
+            self::EVENT_STATUS_CHANGED => "{$actorName} changed ticket {$number} from ".
+                self::statusLabel($this->payload['from'] ?? '').' to '.self::statusLabel($this->payload['to'] ?? '').'.',
+            self::EVENT_REASSIGNED => "{$actorName} assigned ticket {$number} to ".($this->payload['assignee_name'] ?? 'nobody').'.',
+            self::EVENT_COMMENT_ADDED => "{$actorName} added a comment on ticket {$number}.",
+            self::EVENT_SLA_WARNING => "Ticket {$number} ({$this->ticket->issue->name}) has been open for ".
+                ($this->payload['sla_days'] ?? '?').' days and is approaching its SLA limit.',
+            self::EVENT_SLA_BREACHED => "Ticket {$number} ({$this->ticket->issue->name}) has passed its ".
+                ($this->payload['sla_days'] ?? '?').'-day SLA limit and needs attention.',
+            default => "Ticket {$number} was updated.",
         };
     }
 
@@ -145,12 +130,12 @@ class TicketEventNotification extends Notification
         $this->ticket->loadMissing(['category', 'issue', 'relatedToGroup', 'assignee', 'fieldValues.fieldDefinition']);
 
         $details = [
-            __('Category') => $this->ticket->category->name,
-            __('Issue') => $this->ticket->issue->name,
-            __('Status') => self::statusLabel($this->ticket->status),
-            __('Priority') => __(ucwords($this->ticket->priority)),
-            __('Related to') => $this->ticket->relatedToGroup?->name ?? __('Unassigned group'),
-            __('Assignee') => $this->ticket->assignee?->name ?? __('Unassigned'),
+            'Category' => $this->ticket->category->name,
+            'Issue' => $this->ticket->issue->name,
+            'Status' => self::statusLabel($this->ticket->status),
+            'Priority' => ucwords($this->ticket->priority),
+            'Related to' => $this->ticket->relatedToGroup?->name ?? 'Unassigned group',
+            'Assignee' => $this->ticket->assignee?->name ?? 'Unassigned',
         ];
 
         foreach ($this->ticket->header as $key => $value) {
@@ -179,10 +164,10 @@ class TicketEventNotification extends Notification
     public static function statusLabel(string $status): string
     {
         return match ($status) {
-            Ticket::STATUS_OPEN => __('Open'),
-            Ticket::STATUS_IN_PROGRESS => __('In progress'),
-            Ticket::STATUS_RESOLVED => __('Resolved'),
-            Ticket::STATUS_CLOSED => __('Closed'),
+            Ticket::STATUS_OPEN => 'Open',
+            Ticket::STATUS_IN_PROGRESS => 'In progress',
+            Ticket::STATUS_RESOLVED => 'Resolved',
+            Ticket::STATUS_CLOSED => 'Closed',
             default => $status,
         };
     }

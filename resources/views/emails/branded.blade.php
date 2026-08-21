@@ -15,7 +15,7 @@
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 20px;">
                                 <tr>
                                     <td colspan="2" style="padding-bottom:8px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9ca3af;">
-                                        {{ __('Ticket details') }}
+                                        Details
                                     </td>
                                 </tr>
                                 @foreach ($details as $label => $value)
@@ -50,8 +50,8 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">
                             <tr>
                                 <td style="font-size:13px;line-height:1.6;color:#374151;">
-                                    {{ __('Regards,') }}<br>
-                                    <strong>{{ $signatureName ?? __('System') }}</strong>
+                                    Regards,<br>
+                                    <strong>{{ $signatureName ?? 'System' }}</strong>
                                     @if (! empty($signatureRole))
                                         <br><span style="color:#6b7280;">{{ $signatureRole }}</span>
                                     @endif
@@ -63,7 +63,7 @@
                 </tr>
                 <tr>
                     <td align="center" style="padding-top:20px;font-size:11px;color:#9ca3af;font-family:Helvetica,Arial,sans-serif;">
-                        &copy; {{ date('Y') }} Lunex Telecom. {{ __('All rights reserved.') }}
+                        &copy; {{ date('Y') }} Lunex Telecom. All rights reserved.
                     </td>
                 </tr>
             </table>
