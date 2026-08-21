@@ -47,6 +47,13 @@
                             {{ __('Reports') }}
                         </a>
                     @endif
+                    @can('tickets.view.own')
+                        <a href="{{ route('admin.help.index') }}"
+                            class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                {{ request()->routeIs('admin.help.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                            {{ __('Help') }}
+                        </a>
+                    @endcan
                 </div>
             </div>
             <div class="flex items-center gap-3">

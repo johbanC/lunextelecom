@@ -30,6 +30,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'groups.manage',
             'users.manage',
             'notification_rules.manage',
+            'help.manage',
         ];
 
         foreach ($permissions as $permission) {

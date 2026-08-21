@@ -62,6 +62,10 @@ Route::middleware('auth')->group(function () {
         Route::get('reports', function () {
             return view('admin.reports.index');
         })->name('reports.index');
+
+        Route::get('help', function () {
+            return view('admin.help.index');
+        })->name('help.index')->middleware('can:tickets.view.own');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
