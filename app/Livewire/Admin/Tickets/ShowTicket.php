@@ -249,7 +249,11 @@ class ShowTicket extends Component
                 );
             }
 
-            $changed[] = $field->label;
+            $changed[] = [
+                'label' => $field->label,
+                'from' => $this->formatStoredFieldValue($oldStored, $field),
+                'to' => $this->formatStoredFieldValue($newStored, $field),
+            ];
         }
 
         if (! empty($changed)) {
@@ -262,6 +266,19 @@ class ShowTicket extends Component
 
         $this->showFieldsForm = false;
         $this->ticket->refresh();
+    }
+
+    protected function formatStoredFieldValue(?string $stored, FieldDefinition $field): ?string
+    {
+        if ($stored === null) {
+            return null;
+        }
+
+        if ($field->isMultiValue()) {
+            return implode(', ', json_decode($stored, true) ?? []);
+        }
+
+        return $stored;
     }
 
     public function render(): View

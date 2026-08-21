@@ -75,6 +75,18 @@
                                     <span class="font-semibold">{{ $event->user?->name ?? __('System') }}</span>
                                     {{ $event->describe() }}
                                 </div>
+                                @if ($event->type === 'fields_updated')
+                                    <ul class="mt-1 space-y-0.5">
+                                        @foreach ($event->fieldChanges() as $change)
+                                            <li class="text-xs text-gray-500">
+                                                <span class="font-medium text-gray-600">{{ $change['label'] }}:</span>
+                                                <span class="line-through text-gray-400">{{ $change['from'] ?? __('empty') }}</span>
+                                                &rarr;
+                                                <span class="text-gray-700">{{ $change['to'] ?? __('empty') }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
                                 <div class="text-xs text-gray-400">{{ $event->created_at->format('d/m/Y H:i') }}</div>
                             </div>
                         </li>

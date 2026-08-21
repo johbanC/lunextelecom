@@ -36,9 +36,25 @@ class TicketEvent extends Model
             'reassigned' => $this->describeReassigned($payload),
             'comment_added' => __('added a comment'),
             'attachment_added' => trans_choice('{1} attached 1 file|[2,*] attached :count files', $payload['count'] ?? 1, ['count' => $payload['count'] ?? 1]),
-            'fields_updated' => __('updated :fields', ['fields' => implode(', ', $payload['fields'] ?? [])]),
+            'fields_updated' => trans_choice(
+                '{1} updated 1 field|[2,*] updated :count fields',
+                count($payload['fields'] ?? []),
+                ['count' => count($payload['fields'] ?? [])]
+            ),
             default => str_replace('_', ' ', $this->type),
         };
+    }
+
+    /**
+     * Detalle campo-por-campo (label, valor anterior, valor nuevo) para
+     * eventos fields_updated — la vista lo usa para mostrar exactamente
+     * qué cambió, no solo qué campos.
+     *
+     * @return array<int, array{label: string, from: ?string, to: ?string}>
+     */
+    public function fieldChanges(): array
+    {
+        return $this->type === 'fields_updated' ? ($this->payload['fields'] ?? []) : [];
     }
 
     protected function describeReassigned(array $payload): string
