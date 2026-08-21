@@ -67,15 +67,15 @@
                                     <span class="size-1.5 rounded-full bg-amber-500"></span> {{ __('Pending') }}
                                 </span>
                                 <div class="text-xs text-gray-400 mt-1">
-                                    {{ $agreement->expires_at ? __('Expires :date', ['date' => $agreement->expires_at->format('d/m/Y')]) : __('No expiration') }}
+                                    {{ $agreement->expires_at ? __('Expires :date', ['date' => $agreement->expires_at->format('m/d/Y')]) : __('No expiration') }}
                                 </div>
                             @endif
                         </td>
                         <td class="p-4 text-gray-500">
-                            {{ $agreement->created_at->format('d/m/Y H:i') }}
+                            {{ $agreement->created_at->format('m/d/Y H:i') }}
                             <div class="text-xs text-gray-400">{{ __('by :name', ['name' => $agreement->creator?->name ?? '—']) }}</div>
                         </td>
-                        <td class="p-4 text-gray-500">{{ $agreement->signed_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                        <td class="p-4 text-gray-500">{{ $agreement->signed_at?->format('m/d/Y H:i') ?? '—' }}</td>
                         <td class="p-4 text-right space-x-3 whitespace-nowrap">
                             <a href="{{ route('admin.agreements.show', $agreement) }}" class="text-brand-blue font-semibold hover:text-brand-blue-700 hover:underline">{{ __('View') }}</a>
                             @if ($agreement->isSigned())

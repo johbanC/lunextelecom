@@ -48,6 +48,13 @@ class PublicAgreementController extends Controller
             'signature' => 'required|string|starts_with:data:image/png;base64,',
         ]);
 
+        // Catalog names/descriptions are translated for display via __(), but we
+        // always want to persist them in English regardless of the client's locale.
+        $originalLocale = app()->getLocale();
+        app()->setLocale('en');
+        $catalogEn = collect(Agreement::itemCatalog($agreement->type))->keyBy('key');
+        app()->setLocale($originalLocale);
+
         $items = [];
         $total = 0;
 
@@ -58,7 +65,7 @@ class PublicAgreementController extends Controller
 
             $items[] = [
                 'key' => $catalogItem['key'],
-                'name' => $catalogItem['name'],
+                'name' => $catalogEn[$catalogItem['key']]['name'],
                 'rate' => $catalogItem['rate'],
                 'qty' => $qty,
                 'total' => $lineTotal,

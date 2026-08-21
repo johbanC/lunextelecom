@@ -1,0 +1,41 @@
+{
+    "Date": "तारीख़",
+
+    "This form has already been signed.": "यह फ़ॉर्म पहले ही हस्ताक्षरित किया जा चुका है।",
+    "Signed on :date. If you think this is a mistake, contact Lunex Telecom.": ":date को हस्ताक्षरित। यदि आपको लगता है कि यह एक गलती है, तो Lunex Telecom से संपर्क करें।",
+    "This signing link has expired.": "यह हस्ताक्षर लिंक समाप्त हो चुका है।",
+    "Contact Lunex Telecom to have a new link sent to you.": "नया लिंक पाने के लिए Lunex Telecom से संपर्क करें।",
+
+    "Owner's Name": "मालिक का नाम",
+    "Primary Phone Number": "मुख्य फ़ोन नंबर",
+    "Business Name": "व्यवसाय का नाम",
+    "Location Address": "स्थान का पता",
+    "Last 4 Digits of Bank Acct": "बैंक खाते के अंतिम 4 अंक",
+    "Training Date": "प्रशिक्षण की तारीख़",
+    "I authorize Lunex Telecom, Inc. to initiate debit ACH to the account ending with": "मैं Lunex Telecom, Inc. को उस खाते से डेबिट ACH शुरू करने के लिए अधिकृत करता/करती हूँ जो इन अंकों पर समाप्त होता है",
+    "Item": "वस्तु",
+    "Rate": "दर",
+    "Quantity": "मात्रा",
+    "Total": "कुल",
+    "Free": "मुफ़्त",
+    "TOTAL AMOUNT": "कुल राशि",
+    "Signature": "हस्ताक्षर",
+    "Please add your signature before submitting.": "जमा करने से पहले कृपया अपना हस्ताक्षर जोड़ें।",
+    "Clear Signature": "हस्ताक्षर मिटाएं",
+    "Submit Authorization": "प्राधिकरण जमा करें",
+
+    "Thank you": "धन्यवाद",
+    "Form submitted!": "फ़ॉर्म जमा हो गया!",
+    "Thank you, :name. Your authorization for account :account was received and signed successfully.": "धन्यवाद, :name। खाता :account के लिए आपका प्राधिकरण सफलतापूर्वक प्राप्त और हस्ताक्षरित हो गया है।",
+
+    "GA COAM Equipment Inquiry": "GA COAM उपकरण पूछताछ",
+    "LAPTOP": "लैपटॉप",
+    "(Installation, Training, Scanner & Cards)": "(इंस्टॉलेशन, प्रशिक्षण, स्कैनर और कार्ड)",
+    "PAX TERMINAL": "PAX टर्मिनल",
+    "IN PERSON TRAINING ONLY": "केवल व्यक्तिगत प्रशिक्षण",
+    "(Includes Scanner & cards)": "(स्कैनर और कार्ड शामिल हैं)",
+    "REMOTE TRAINING ONLY": "केवल रिमोट प्रशिक्षण",
+    "(Includes Scanner & cards) shipped": "(स्कैनर और कार्ड शामिल हैं) भेजा गया",
+    "SCANNER ONLY": "केवल स्कैनर",
+    "COAM CARDS": "COAM कार्ड"
+}

@@ -10,7 +10,7 @@
 
     <div class="max-w-3xl mx-auto">
         <div class="flex justify-end mb-3">
-            <x-locale-switcher class="bg-white" />
+            <x-locale-switcher class="bg-white" :locales="['en' => 'EN', 'es' => 'ES', 'hi' => 'हि']" />
         </div>
 
         <div class="rounded-2xl bg-white shadow-xl shadow-gray-300/40 overflow-hidden">
@@ -29,7 +29,7 @@
                     </svg>
                 </div>
                 <p class="text-lg font-bold text-gray-800">{{ __('This form has already been signed.') }}</p>
-                <p class="text-sm text-gray-500">{{ __('Signed on :date. If you think this is a mistake, contact Lunex Telecom.', ['date' => $agreement->signed_at->format('d/m/Y H:i')]) }}</p>
+                <p class="text-sm text-gray-500">{{ __('Signed on :date. If you think this is a mistake, contact Lunex Telecom.', ['date' => $agreement->signed_at->format('m/d/Y H:i')]) }}</p>
             </div>
         @elseif ($expired)
             <div class="p-10 text-center space-y-3">
