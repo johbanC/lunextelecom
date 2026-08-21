@@ -139,6 +139,7 @@
                                 {{ $field->label }}
                                 @if ($field->is_required) <span class="text-brand-red">*</span> @endif
                                 @if ($field->field_type === 'pick_n') <span class="text-xs text-gray-400">({{ __('Pick :n', ['n' => $field->pick_count]) }})</span> @endif
+                                <x-field-help :text="$field->help_text" />
                             </label>
 
                             @switch($field->field_type)
