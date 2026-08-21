@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class Ticket extends Model
 {
@@ -51,14 +50,42 @@ class Ticket extends Model
     {
         static::creating(function (Ticket $ticket) {
             if (empty($ticket->ticket_number)) {
-                $ticket->ticket_number = static::generateTicketNumber();
+                $ticket->ticket_number = static::generateTicketNumber($ticket->ticket_type_id);
             }
         });
     }
 
-    protected static function generateTicketNumber(): string
+    /**
+     * Números correlativos por tipo de ticket: R-##### para Retailer (5
+     * dígitos) y C-########## para Customer (10 dígitos), replicando el
+     * formato del sistema viejo. lockForUpdate() serializa la lectura del
+     * último número dentro de la misma transacción en la que se crea el
+     * ticket (ver CreateTicket::save()); el chequeo exists() de respaldo
+     * cubre el caso borde de la primera fila de cada prefijo, donde no hay
+     * nada que bloquear todavía.
+     */
+    protected static function generateTicketNumber(int $ticketTypeId): string
     {
-        return 'LX-'.now()->format('ymd').'-'.Str::upper(Str::random(5));
+        $code = TicketType::find($ticketTypeId)?->code;
+
+        [$prefix, $digits] = $code === TicketType::CUSTOMER
+            ? ['C-', 10]
+            : ['R-', 5];
+
+        $last = static::where('ticket_number', 'like', "{$prefix}%")
+            ->lockForUpdate()
+            ->orderByRaw('CAST(SUBSTRING(ticket_number, ?) AS UNSIGNED) DESC', [strlen($prefix) + 1])
+            ->value('ticket_number');
+
+        $next = $last ? ((int) substr($last, strlen($prefix))) + 1 : 1;
+        $number = $prefix.str_pad((string) $next, $digits, '0', STR_PAD_LEFT);
+
+        while (static::where('ticket_number', $number)->exists()) {
+            $next++;
+            $number = $prefix.str_pad((string) $next, $digits, '0', STR_PAD_LEFT);
+        }
+
+        return $number;
     }
 
     /**
