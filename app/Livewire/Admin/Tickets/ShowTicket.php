@@ -19,11 +19,15 @@ class ShowTicket extends Component
 
     public function mount(Ticket $ticket): void
     {
+        $this->authorize('view', $ticket);
+
         $this->ticket = $ticket;
     }
 
     public function updateStatus(string $status): void
     {
+        $this->authorize('changeStatus', $this->ticket);
+
         if (! in_array($status, [Ticket::STATUS_OPEN, Ticket::STATUS_IN_PROGRESS, Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED], true)) {
             return;
         }
@@ -51,6 +55,8 @@ class ShowTicket extends Component
 
     public function reassign(?int $assigneeId): void
     {
+        $this->authorize('reassign', $this->ticket);
+
         $previous = $this->ticket->assignee_id;
         if ($previous === $assigneeId) {
             return;
@@ -69,6 +75,8 @@ class ShowTicket extends Component
 
     public function updateGroup(?int $groupId): void
     {
+        $this->authorize('reassign', $this->ticket);
+
         $previous = $this->ticket->related_to_group_id;
         if ($previous === $groupId) {
             return;
@@ -87,6 +95,8 @@ class ShowTicket extends Component
 
     public function addComment(): void
     {
+        $this->authorize('comment', $this->ticket);
+
         $this->validate([
             'newComment' => ['required', 'string', 'max:5000'],
             'commentVisibility' => ['required', 'in:internal,external'],

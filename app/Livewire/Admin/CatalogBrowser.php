@@ -24,6 +24,8 @@ class CatalogBrowser extends Component
 
     public function mount(): void
     {
+        $this->authorize('catalog.manage');
+
         $this->categoryId = Category::whereHas('ticketType', fn ($q) => $q->where('code', $this->ticketTypeCode))
             ->orderBy('sort_order')
             ->value('id');

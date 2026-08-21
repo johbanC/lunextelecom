@@ -1,13 +1,15 @@
 <div>
     <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
         <h1 class="text-xl font-bold text-gray-800">{{ __('Tickets') }}</h1>
-        <a href="{{ route('admin.tickets.create') }}" wire:navigate
-            class="inline-flex items-center gap-2 bg-brand-blue text-white pl-3 pr-4 py-2 rounded-lg font-semibold text-sm shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
-                <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-            </svg>
-            {{ __('New ticket') }}
-        </a>
+        @can('create', \App\Models\Ticket::class)
+            <a href="{{ route('admin.tickets.create') }}" wire:navigate
+                class="inline-flex items-center gap-2 bg-brand-blue text-white pl-3 pr-4 py-2 rounded-lg font-semibold text-sm shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                    <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                </svg>
+                {{ __('New ticket') }}
+            </a>
+        @endcan
     </div>
 
     <div class="flex flex-wrap items-center gap-3 mb-4">

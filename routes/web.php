@@ -28,16 +28,16 @@ Route::middleware('auth')->group(function () {
         Route::prefix('tickets')->name('tickets.')->group(function () {
             Route::get('/', function () {
                 return view('admin.tickets.index');
-            })->name('index');
+            })->name('index')->middleware('can:viewAny,'.Ticket::class);
             Route::get('create', function () {
                 return view('admin.tickets.create');
-            })->name('create');
+            })->name('create')->middleware('can:create,'.Ticket::class);
             Route::get('catalog', function () {
                 return view('admin.tickets.catalog');
-            })->name('catalog');
+            })->name('catalog')->middleware('can:catalog.manage');
             Route::get('{ticket}', function (Ticket $ticket) {
                 return view('admin.tickets.show', ['ticket' => $ticket]);
-            })->name('show');
+            })->name('show')->middleware('can:view,ticket');
         });
     });
 

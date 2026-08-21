@@ -102,20 +102,22 @@
                         <li class="text-sm text-gray-400">{{ __('No comments yet.') }}</li>
                     @endforelse
                 </ul>
-                <form wire:submit="addComment" class="space-y-2">
-                    <textarea wire:model="newComment" rows="3" placeholder="{{ __('Write a comment…') }}"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition"></textarea>
-                    @error('newComment') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
-                    <div class="flex items-center justify-between">
-                        <select wire:model="commentVisibility" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                            <option value="internal">{{ __('Internal') }}</option>
-                            <option value="external">{{ __('External') }}</option>
-                        </select>
-                        <button type="submit" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-brand-blue-600 transition">
-                            {{ __('Comment') }}
-                        </button>
-                    </div>
-                </form>
+                @can('comment', $ticket)
+                    <form wire:submit="addComment" class="space-y-2">
+                        <textarea wire:model="newComment" rows="3" placeholder="{{ __('Write a comment…') }}"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition"></textarea>
+                        @error('newComment') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
+                        <div class="flex items-center justify-between">
+                            <select wire:model="commentVisibility" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                                <option value="internal">{{ __('Internal') }}</option>
+                                <option value="external">{{ __('External') }}</option>
+                            </select>
+                            <button type="submit" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-brand-blue-600 transition">
+                                {{ __('Comment') }}
+                            </button>
+                        </div>
+                    </form>
+                @endcan
             </div>
         </div>
 
@@ -123,11 +125,15 @@
         <div class="space-y-6">
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
                 <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ __('Status') }}</h2>
-                <select wire:change="updateStatus($event.target.value)" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                    @foreach (['open' => __('Open'), 'in_progress' => __('In progress'), 'resolved' => __('Resolved'), 'closed' => __('Closed')] as $value => $label)
-                        <option value="{{ $value }}" @selected($ticket->status === $value)>{{ $label }}</option>
-                    @endforeach
-                </select>
+                @can('changeStatus', $ticket)
+                    <select wire:change="updateStatus($event.target.value)" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                        @foreach (['open' => __('Open'), 'in_progress' => __('In progress'), 'resolved' => __('Resolved'), 'closed' => __('Closed')] as $value => $label)
+                            <option value="{{ $value }}" @selected($ticket->status === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                @else
+                    <p class="text-sm text-gray-700 font-medium capitalize">{{ str_replace('_', ' ', $ticket->status) }}</p>
+                @endcan
 
                 <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mt-4 mb-1">{{ __('Priority') }}</h2>
                 <p class="text-sm text-gray-700 font-medium capitalize">{{ $ticket->priority }}</p>
@@ -135,20 +141,27 @@
 
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
                 <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ __('Related to') }}</h2>
-                <select wire:change="updateGroup($event.target.value ? $event.target.value : null)" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                    <option value="">{{ __('Unassigned group') }}</option>
-                    @foreach ($groups as $group)
-                        <option value="{{ $group->id }}" @selected($ticket->related_to_group_id === $group->id)>{{ $group->name }}</option>
-                    @endforeach
-                </select>
+                @can('reassign', $ticket)
+                    <select wire:change="updateGroup($event.target.value ? $event.target.value : null)" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                        <option value="">{{ __('Unassigned group') }}</option>
+                        @foreach ($groups as $group)
+                            <option value="{{ $group->id }}" @selected($ticket->related_to_group_id === $group->id)>{{ $group->name }}</option>
+                        @endforeach
+                    </select>
 
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mt-4 mb-1">{{ __('Assignee') }}</h2>
-                <select wire:change="reassign($event.target.value ? $event.target.value : null)" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                    <option value="">{{ __('Unassigned') }}</option>
-                    @foreach ($users as $user)
-                        <option value="{{ $user->id }}" @selected($ticket->assignee_id === $user->id)>{{ $user->name }}</option>
-                    @endforeach
-                </select>
+                    <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mt-4 mb-1">{{ __('Assignee') }}</h2>
+                    <select wire:change="reassign($event.target.value ? $event.target.value : null)" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                        <option value="">{{ __('Unassigned') }}</option>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->id }}" @selected($ticket->assignee_id === $user->id)>{{ $user->name }}</option>
+                        @endforeach
+                    </select>
+                @else
+                    <p class="text-sm text-gray-700 font-medium">{{ $ticket->relatedToGroup?->name ?? __('Unassigned group') }}</p>
+
+                    <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mt-4 mb-1">{{ __('Assignee') }}</h2>
+                    <p class="text-sm text-gray-700 font-medium">{{ $ticket->assignee?->name ?? __('Unassigned') }}</p>
+                @endcan
             </div>
 
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5 text-sm text-gray-500 space-y-1">

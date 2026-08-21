@@ -43,6 +43,8 @@ class CreateTicket extends Component
 
     public function mount(): void
     {
+        $this->authorize('create', Ticket::class);
+
         $this->resetHeader();
     }
 
@@ -138,6 +140,8 @@ class CreateTicket extends Component
 
     public function save(): void
     {
+        $this->authorize('create', Ticket::class);
+
         $this->validate();
 
         $issue = $this->currentIssue();
