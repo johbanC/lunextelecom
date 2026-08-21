@@ -36,6 +36,7 @@ class TicketEvent extends Model
             'reassigned' => $this->describeReassigned($payload),
             'comment_added' => __('added a comment'),
             'attachment_added' => trans_choice('{1} attached 1 file|[2,*] attached :count files', $payload['count'] ?? 1, ['count' => $payload['count'] ?? 1]),
+            'fields_updated' => __('updated :fields', ['fields' => implode(', ', $payload['fields'] ?? [])]),
             default => str_replace('_', ' ', $this->type),
         };
     }

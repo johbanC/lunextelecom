@@ -21,6 +21,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'tickets.comment',
             'tickets.attach',
             'tickets.change_status',
+            'tickets.edit_fields',
             'tickets.reassign',
             'reports.view.group',
             'reports.view.all',
@@ -42,6 +43,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'tickets.comment',
             'tickets.attach',
             'tickets.change_status',
+            'tickets.edit_fields',
         ]);
 
         $teamLead = Role::findOrCreate('Líder de equipo');

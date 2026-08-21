@@ -40,7 +40,12 @@
 
             {{-- Campos dinámicos --}}
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ $ticket->issue->name }}</h2>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ $ticket->issue->name }}</h2>
+                    @can('editFields', $ticket)
+                        <button wire:click="editFields" class="text-xs font-semibold text-brand-blue hover:underline">{{ __('Edit') }}</button>
+                    @endcan
+                </div>
                 @if ($ticket->fieldValues->isEmpty())
                     <p class="text-sm text-gray-400">{{ __('No extra fields recorded.') }}</p>
                 @else
@@ -194,4 +199,85 @@
             </div>
         </div>
     </div>
+
+    {{-- Modal: editar campos dinámicos --}}
+    @if ($showFieldsForm)
+        <div class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto">
+            <div class="absolute inset-0 bg-gray-500/75" wire:click="$set('showFieldsForm', false)"></div>
+            <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">{{ __('Edit :issue fields', ['issue' => $ticket->issue->name]) }}</h2>
+                <form wire:submit="saveFields" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        @foreach ($ticket->issue->fieldDefinitions as $field)
+                            <div class="{{ in_array($field->field_type, ['textarea', 'checkbox', 'pick_n']) ? 'sm:col-span-2' : '' }}">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">
+                                    {{ $field->label }}
+                                    @if ($field->is_required) <span class="text-brand-red">*</span> @endif
+                                    @if ($field->field_type === 'pick_n') <span class="text-xs text-gray-400">({{ __('Pick :n', ['n' => $field->pick_count]) }})</span> @endif
+                                </label>
+
+                                @switch($field->field_type)
+                                    @case('textarea')
+                                        <textarea wire:model="fieldValuesForm.{{ $field->id }}" rows="3"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition"></textarea>
+                                        @break
+
+                                    @case('date')
+                                        <input type="date" wire:model="fieldValuesForm.{{ $field->id }}"
+                                            class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                                        @break
+
+                                    @case('select')
+                                        <select wire:model="fieldValuesForm.{{ $field->id }}"
+                                            class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                                            <option value="">{{ __('Select…') }}</option>
+                                            @foreach ($field->options as $option)
+                                                <option value="{{ $option->value }}">{{ $option->value }}</option>
+                                            @endforeach
+                                        </select>
+                                        @break
+
+                                    @case('radio')
+                                        <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1.5">
+                                            @foreach ($field->options as $option)
+                                                <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                    <input type="radio" wire:model="fieldValuesForm.{{ $field->id }}" value="{{ $option->value }}"
+                                                        class="text-brand-blue focus:ring-brand-blue">
+                                                    {{ $option->value }}
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        @break
+
+                                    @case('checkbox')
+                                    @case('pick_n')
+                                        <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1.5">
+                                            @foreach ($field->options as $option)
+                                                <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                    <input type="checkbox" wire:model="fieldValuesForm.{{ $field->id }}" value="{{ $option->value }}"
+                                                        class="rounded text-brand-blue focus:ring-brand-blue">
+                                                    {{ $option->value }}
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        @break
+
+                                    @default
+                                        <input type="text" wire:model="fieldValuesForm.{{ $field->id }}"
+                                            class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                                @endswitch
+
+                                @error("fieldValuesForm.{$field->id}") <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                        <button type="button" wire:click="$set('showFieldsForm', false)" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition">{{ __('Cancel') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-blue text-white hover:bg-brand-blue-600 transition">{{ __('Save') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>

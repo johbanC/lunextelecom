@@ -60,6 +60,11 @@ class TicketPolicy
         return $user->can('tickets.change_status') && $this->view($user, $ticket);
     }
 
+    public function editFields(User $user, Ticket $ticket): bool
+    {
+        return $user->can('tickets.edit_fields') && $this->view($user, $ticket);
+    }
+
     public function reassign(User $user, Ticket $ticket): bool
     {
         return $user->can('tickets.reassign') && $this->view($user, $ticket);

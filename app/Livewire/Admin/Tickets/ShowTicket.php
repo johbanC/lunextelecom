@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Tickets;
 
+use App\Models\FieldDefinition;
 use App\Models\Group;
 use App\Models\Ticket;
 use App\Models\User;
@@ -25,6 +26,11 @@ class ShowTicket extends Component
 
     /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
     public array $newAttachments = [];
+
+    public bool $showFieldsForm = false;
+
+    /** @var array<int, string|array<int, string>> */
+    public array $fieldValuesForm = [];
 
     public function mount(Ticket $ticket): void
     {
@@ -177,6 +183,84 @@ class ShowTicket extends Component
         ]);
 
         $this->newAttachments = [];
+        $this->ticket->refresh();
+    }
+
+    public function editFields(): void
+    {
+        $this->authorize('editFields', $this->ticket);
+
+        $this->ticket->load('issue.fieldDefinitions.options', 'fieldValues');
+        $existing = $this->ticket->fieldValues->keyBy('field_definition_id');
+
+        $this->fieldValuesForm = [];
+        foreach ($this->ticket->issue->fieldDefinitions as $field) {
+            $value = $existing->get($field->id)?->decodedValue();
+            $this->fieldValuesForm[$field->id] = $field->isMultiValue() ? ($value ?? []) : ($value ?? '');
+        }
+
+        $this->showFieldsForm = true;
+    }
+
+    public function saveFields(): void
+    {
+        $this->authorize('editFields', $this->ticket);
+
+        $issue = $this->ticket->issue()->with('fieldDefinitions')->first();
+
+        $rules = [];
+        foreach ($issue->fieldDefinitions as $field) {
+            $required = $field->is_required ? 'required' : 'nullable';
+            $rules["fieldValuesForm.{$field->id}"] = $field->isMultiValue() ? [$required, 'array'] : [$required, 'string', 'max:2000'];
+        }
+        $this->validate($rules);
+
+        foreach ($issue->fieldDefinitions as $field) {
+            if ($field->field_type === FieldDefinition::TYPE_PICK_N && $field->pick_count) {
+                $selected = $this->fieldValuesForm[$field->id] ?? [];
+                if (count($selected) !== $field->pick_count) {
+                    $this->addError("fieldValuesForm.{$field->id}", __('Select exactly :n option(s) for :label.', ['n' => $field->pick_count, 'label' => $field->label]));
+
+                    return;
+                }
+            }
+        }
+
+        $changed = [];
+
+        foreach ($issue->fieldDefinitions as $field) {
+            $rawValue = $this->fieldValuesForm[$field->id] ?? ($field->isMultiValue() ? [] : '');
+            $isEmpty = $rawValue === '' || $rawValue === [] || $rawValue === null;
+            $newStored = $isEmpty ? null : ($field->isMultiValue() ? json_encode(array_values((array) $rawValue)) : $rawValue);
+
+            $existingRow = $this->ticket->fieldValues->firstWhere('field_definition_id', $field->id);
+            $oldStored = $existingRow?->value;
+
+            if ($newStored === $oldStored) {
+                continue;
+            }
+
+            if ($newStored === null) {
+                $existingRow?->delete();
+            } else {
+                $this->ticket->fieldValues()->updateOrCreate(
+                    ['field_definition_id' => $field->id],
+                    ['value' => $newStored]
+                );
+            }
+
+            $changed[] = $field->label;
+        }
+
+        if (! empty($changed)) {
+            $this->ticket->events()->create([
+                'user_id' => Auth::id(),
+                'type' => 'fields_updated',
+                'payload' => ['fields' => $changed],
+            ]);
+        }
+
+        $this->showFieldsForm = false;
         $this->ticket->refresh();
     }
 
