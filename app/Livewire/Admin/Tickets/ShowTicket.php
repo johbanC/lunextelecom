@@ -5,6 +5,8 @@ namespace App\Livewire\Admin\Tickets;
 use App\Models\Group;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Notifications\TicketEventNotification;
+use App\Services\TicketNotifier;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -50,6 +52,14 @@ class ShowTicket extends Component
             'payload' => ['from' => $previous, 'to' => $status],
         ]);
 
+        TicketNotifier::notify(
+            $this->ticket,
+            TicketEventNotification::EVENT_STATUS_CHANGED,
+            Auth::user(),
+            ['from' => $previous, 'to' => $status],
+            directAssigneeId: $this->ticket->assignee_id,
+        );
+
         $this->ticket->refresh();
     }
 
@@ -70,6 +80,14 @@ class ShowTicket extends Component
             'payload' => ['from' => $previous, 'to' => $assigneeId],
         ]);
 
+        TicketNotifier::notify(
+            $this->ticket,
+            TicketEventNotification::EVENT_REASSIGNED,
+            Auth::user(),
+            ['from' => $previous, 'to' => $assigneeId, 'assignee_name' => $assigneeId ? User::find($assigneeId)?->name : null],
+            directAssigneeId: $assigneeId,
+        );
+
         $this->ticket->refresh();
     }
 
@@ -89,6 +107,13 @@ class ShowTicket extends Component
             'type' => 'reassigned',
             'payload' => ['group_from' => $previous, 'group_to' => $groupId],
         ]);
+
+        TicketNotifier::notify(
+            $this->ticket,
+            TicketEventNotification::EVENT_REASSIGNED,
+            Auth::user(),
+            ['group_from' => $previous, 'group_to' => $groupId, 'assignee_name' => $this->ticket->assignee?->name],
+        );
 
         $this->ticket->refresh();
     }

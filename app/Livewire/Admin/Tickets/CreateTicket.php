@@ -11,6 +11,8 @@ use App\Models\Ticket;
 use App\Models\TicketEvent;
 use App\Models\TicketType;
 use App\Models\User;
+use App\Notifications\TicketEventNotification;
+use App\Services\TicketNotifier;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -203,6 +205,14 @@ class CreateTicket extends Component
 
             return $ticket;
         });
+
+        TicketNotifier::notify(
+            $ticket,
+            TicketEventNotification::EVENT_CREATED,
+            Auth::user(),
+            ['status' => $ticket->status, 'priority' => $ticket->priority],
+            directAssigneeId: $ticket->assignee_id,
+        );
 
         session()->flash('status', __('Ticket :number created.', ['number' => $ticket->ticket_number]));
 

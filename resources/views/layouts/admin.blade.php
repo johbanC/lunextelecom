@@ -31,6 +31,8 @@
             <div class="flex items-center gap-3">
                 <x-locale-switcher />
 
+                <livewire:admin.notification-bell />
+
                 <a href="{{ route('admin.agreements.create') }}"
                     class="inline-flex items-center gap-2 bg-brand-blue text-white pl-3 pr-4 py-2 rounded-lg font-semibold text-sm shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
@@ -69,6 +71,9 @@
                 @endcan
                 @can('catalog.manage')
                     <a href="{{ route('admin.tickets.catalog') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.catalog') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('Catalog') }}</a>
+                @endcan
+                @can('notification_rules.manage')
+                    <a href="{{ route('admin.tickets.notification-rules') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.notification-rules') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('Notification rules') }}</a>
                 @endcan
             </div>
         </div>

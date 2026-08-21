@@ -35,6 +35,9 @@ Route::middleware('auth')->group(function () {
             Route::get('catalog', function () {
                 return view('admin.tickets.catalog');
             })->name('catalog')->middleware('can:catalog.manage');
+            Route::get('notification-rules', function () {
+                return view('admin.tickets.notification-rules');
+            })->name('notification-rules')->middleware('can:notification_rules.manage');
             Route::get('{ticket}', function (Ticket $ticket) {
                 return view('admin.tickets.show', ['ticket' => $ticket]);
             })->name('show')->middleware('can:view,ticket');
