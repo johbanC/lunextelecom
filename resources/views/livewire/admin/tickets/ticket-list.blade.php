@@ -1,18 +1,26 @@
 <div>
     <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
         <h1 class="text-xl font-bold text-gray-800">{{ __('Tickets') }}</h1>
-        @can('create', \App\Models\Ticket::class)
-            <a href="{{ route('admin.tickets.create') }}" wire:navigate
-                class="inline-flex items-center gap-2 bg-brand-blue text-white pl-3 pr-4 py-2 rounded-lg font-semibold text-sm shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition">
+        <div class="flex items-center gap-2">
+            <button wire:click="exportCsv" class="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-50 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
-                    <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                    <path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v6.638l1.96-2.158a.75.75 0 1 1 1.08 1.04l-3.25 3.5a.75.75 0 0 1-1.08 0l-3.25-3.5a.75.75 0 1 1 1.08-1.04l1.96 2.158V3.75A.75.75 0 0 1 10 3ZM3.5 14.75a.75.75 0 0 1 .75-.75h11.5a.75.75 0 0 1 0 1.5H4.25a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" />
                 </svg>
-                {{ __('New ticket') }}
-            </a>
-        @endcan
+                {{ __('Export CSV') }}
+            </button>
+            @can('create', \App\Models\Ticket::class)
+                <a href="{{ route('admin.tickets.create') }}" wire:navigate
+                    class="inline-flex items-center gap-2 bg-brand-blue text-white pl-3 pr-4 py-2 rounded-lg font-semibold text-sm shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                        <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                    </svg>
+                    {{ __('New ticket') }}
+                </a>
+            @endcan
+        </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3 mb-4">
+    <div class="flex flex-wrap items-end gap-3 mb-4">
         <select wire:model.live="ticketTypeFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
             <option value="">{{ __('All types') }}</option>
             <option value="retailer">Retailer</option>
@@ -31,6 +39,24 @@
                 <option value="{{ $category->id }}">{{ $category->name }}</option>
             @endforeach
         </select>
+        <select wire:model.live="issueFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+            <option value="">{{ __('All issues') }}</option>
+            @foreach ($issues as $issue)
+                <option value="{{ $issue->id }}">{{ $issue->name }}</option>
+            @endforeach
+        </select>
+        <select wire:model.live="groupFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+            <option value="">{{ __('All groups') }}</option>
+            @foreach ($groups as $group)
+                <option value="{{ $group->id }}">{{ $group->name }}</option>
+            @endforeach
+        </select>
+        <select wire:model.live="assigneeFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+            <option value="">{{ __('All assignees') }}</option>
+            @foreach ($users as $user)
+                <option value="{{ $user->id }}">{{ $user->name }}</option>
+            @endforeach
+        </select>
         <select wire:model.live="slaFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
             <option value="">{{ __('All SLA') }}</option>
             <option value="red">{{ __('Overdue') }}</option>
@@ -38,6 +64,16 @@
             <option value="green">{{ __('On time') }}</option>
             <option value="done">{{ __('Done') }}</option>
         </select>
+        <div>
+            <label class="block text-[11px] text-gray-400 mb-0.5">{{ __('From') }}</label>
+            <input type="date" wire:model.live="dateFrom" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+        </div>
+        <div>
+            <label class="block text-[11px] text-gray-400 mb-0.5">{{ __('To') }}</label>
+            <input type="date" wire:model.live="dateTo" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+        </div>
+        <input type="text" wire:model.live.debounce.400ms="retailerFilter" placeholder="{{ __('Retailer code…') }}" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm w-40 focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+        <button wire:click="clearFilters" class="h-10 px-3 text-sm font-semibold text-gray-500 hover:text-gray-700 transition">{{ __('Clear filters') }}</button>
     </div>
 
     <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
