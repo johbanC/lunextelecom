@@ -26,6 +26,13 @@
                             {{ __('Tickets') }}
                         </a>
                     @endcan
+                    @can('users.manage')
+                        <a href="{{ route('admin.users.index') }}"
+                            class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                {{ request()->routeIs('admin.users.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                            {{ __('Users') }}
+                        </a>
+                    @endcan
                 </div>
             </div>
             <div class="flex items-center gap-3">

@@ -42,6 +42,10 @@ Route::middleware('auth')->group(function () {
                 return view('admin.tickets.show', ['ticket' => $ticket]);
             })->name('show')->middleware('can:view,ticket');
         });
+
+        Route::get('users', function () {
+            return view('admin.users.index');
+        })->name('users.index')->middleware('can:users.manage');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
