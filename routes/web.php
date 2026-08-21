@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AgreementController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAgreementController;
+use App\Models\Ticket;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin/agreements');
@@ -23,6 +24,21 @@ Route::middleware('auth')->group(function () {
         Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show');
         Route::post('agreements/{agreement}/extend', [AgreementController::class, 'extend'])->name('agreements.extend');
         Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'pdf'])->name('agreements.pdf');
+
+        Route::prefix('tickets')->name('tickets.')->group(function () {
+            Route::get('/', function () {
+                return view('admin.tickets.index');
+            })->name('index');
+            Route::get('create', function () {
+                return view('admin.tickets.create');
+            })->name('create');
+            Route::get('catalog', function () {
+                return view('admin.tickets.catalog');
+            })->name('catalog');
+            Route::get('{ticket}', function (Ticket $ticket) {
+                return view('admin.tickets.show', ['ticket' => $ticket]);
+            })->name('show');
+        });
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

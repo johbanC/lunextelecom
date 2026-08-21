@@ -9,11 +9,23 @@
 <body class="min-h-screen font-sans text-gray-800 bg-gray-50 bg-[radial-gradient(circle_at_top,_var(--color-brand-blue-50),_var(--color-gray-50)_55%)]">
     <nav class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-gray-200 shadow-sm">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-            <a href="{{ route('admin.agreements.index') }}" class="flex items-center gap-3">
-                <img src="{{ asset('img/logo.png') }}" alt="Lunex Telecom" class="h-9 w-auto">
-                <span class="hidden sm:block h-6 w-px bg-gray-200"></span>
-                <span class="hidden sm:block font-semibold text-gray-500 text-sm tracking-wide">{{ __('Forms') }}</span>
-            </a>
+            <div class="flex items-center gap-6">
+                <a href="{{ route('admin.agreements.index') }}" class="flex items-center gap-3">
+                    <img src="{{ asset('img/logo.png') }}" alt="Lunex Telecom" class="h-9 w-auto">
+                </a>
+                <div class="hidden sm:flex items-center gap-1">
+                    <a href="{{ route('admin.agreements.index') }}"
+                        class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                            {{ request()->routeIs('admin.agreements.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                        {{ __('Forms') }}
+                    </a>
+                    <a href="{{ route('admin.tickets.index') }}"
+                        class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                            {{ request()->routeIs('admin.tickets.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                        {{ __('Tickets') }}
+                    </a>
+                </div>
+            </div>
             <div class="flex items-center gap-3">
                 <x-locale-switcher />
 
@@ -43,6 +55,16 @@
             </div>
         </div>
     </nav>
+
+    @if (request()->routeIs('admin.tickets.*'))
+        <div class="bg-white border-b border-gray-100">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-1 py-2 text-sm">
+                <a href="{{ route('admin.tickets.index') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.index') || request()->routeIs('admin.tickets.show') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('All tickets') }}</a>
+                <a href="{{ route('admin.tickets.create') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.create') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('New ticket') }}</a>
+                <a href="{{ route('admin.tickets.catalog') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.catalog') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('Catalog') }}</a>
+            </div>
+        </div>
+    @endif
 
     <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         @if (session('status'))
