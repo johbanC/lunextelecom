@@ -75,4 +75,12 @@ class FieldDefinition extends Model
     {
         return $this->hasMany(FieldOption::class)->orderBy('sort_order');
     }
+
+    /**
+     * @return HasMany<TicketFieldValue, $this>
+     */
+    public function ticketFieldValues(): HasMany
+    {
+        return $this->hasMany(TicketFieldValue::class);
+    }
 }
