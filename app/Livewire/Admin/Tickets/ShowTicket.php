@@ -9,9 +9,9 @@ use App\Models\User;
 use App\Notifications\TicketEventNotification;
 use App\Services\TicketNotifier;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class ShowTicket extends Component
@@ -24,7 +24,7 @@ class ShowTicket extends Component
 
     public string $commentVisibility = 'internal';
 
-    /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
+    /** @var array<int, TemporaryUploadedFile> */
     public array $newAttachments = [];
 
     public bool $showFieldsForm = false;
@@ -55,6 +55,8 @@ class ShowTicket extends Component
         $this->ticket->update([
             'status' => $status,
             'sla_status_since' => now(),
+            'sla_warning_notified_at' => null,
+            'sla_breached_notified_at' => null,
             'resolved_at' => $status === Ticket::STATUS_RESOLVED ? now() : $this->ticket->resolved_at,
             'closed_at' => $status === Ticket::STATUS_CLOSED ? now() : $this->ticket->closed_at,
         ]);

@@ -23,6 +23,10 @@ class TicketEventNotification extends Notification
 
     public const EVENT_REASSIGNED = 'reassigned';
 
+    public const EVENT_SLA_WARNING = 'sla_warning';
+
+    public const EVENT_SLA_BREACHED = 'sla_breached';
+
     /**
      * @param  array<int, string>  $channels
      * @param  array<string, mixed>  $payload
@@ -75,6 +79,8 @@ class TicketEventNotification extends Notification
             self::EVENT_CREATED => __('New ticket :number', ['number' => $this->ticket->ticket_number]),
             self::EVENT_STATUS_CHANGED => __('Ticket :number changed status', ['number' => $this->ticket->ticket_number]),
             self::EVENT_REASSIGNED => __('Ticket :number was reassigned', ['number' => $this->ticket->ticket_number]),
+            self::EVENT_SLA_WARNING => __('Ticket :number is close to its SLA', ['number' => $this->ticket->ticket_number]),
+            self::EVENT_SLA_BREACHED => __('Ticket :number breached its SLA', ['number' => $this->ticket->ticket_number]),
             default => __('Ticket :number updated', ['number' => $this->ticket->ticket_number]),
         };
     }
@@ -99,6 +105,16 @@ class TicketEventNotification extends Notification
                 'actor' => $actorName,
                 'number' => $this->ticket->ticket_number,
                 'assignee' => $this->payload['assignee_name'] ?? __('nobody'),
+            ]),
+            self::EVENT_SLA_WARNING => __('Ticket :number (:issue) has been open for :days days and is approaching its SLA limit.', [
+                'number' => $this->ticket->ticket_number,
+                'issue' => $this->ticket->issue->name,
+                'days' => $this->payload['sla_days'] ?? '?',
+            ]),
+            self::EVENT_SLA_BREACHED => __('Ticket :number (:issue) has passed its :days-day SLA limit and needs attention.', [
+                'number' => $this->ticket->ticket_number,
+                'issue' => $this->ticket->issue->name,
+                'days' => $this->payload['sla_days'] ?? '?',
             ]),
             default => __('Ticket :number was updated.', ['number' => $this->ticket->ticket_number]),
         };

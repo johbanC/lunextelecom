@@ -32,6 +32,8 @@ class Ticket extends Model
         'assignee_id',
         'created_by',
         'sla_status_since',
+        'sla_warning_notified_at',
+        'sla_breached_notified_at',
         'resolved_at',
         'closed_at',
     ];
@@ -39,6 +41,8 @@ class Ticket extends Model
     protected $casts = [
         'header' => 'array',
         'sla_status_since' => 'datetime',
+        'sla_warning_notified_at' => 'datetime',
+        'sla_breached_notified_at' => 'datetime',
         'resolved_at' => 'datetime',
         'closed_at' => 'datetime',
     ];
