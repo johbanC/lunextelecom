@@ -244,8 +244,8 @@ class ShowTicket extends Component
         foreach ($issue->fieldDefinitions as $field) {
             if ($field->field_type === FieldDefinition::TYPE_PICK_N && $field->pick_count) {
                 $selected = $this->fieldValuesForm[$field->id] ?? [];
-                if (count($selected) !== $field->pick_count) {
-                    $this->addError("fieldValuesForm.{$field->id}", __('Select exactly :n option(s) for :label.', ['n' => $field->pick_count, 'label' => $field->label]));
+                if (count($selected) < $field->pick_count) {
+                    $this->addError("fieldValuesForm.{$field->id}", __('Select at least :n option(s) for :label.', ['n' => $field->pick_count, 'label' => $field->label]));
 
                     return;
                 }

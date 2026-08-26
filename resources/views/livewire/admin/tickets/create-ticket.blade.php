@@ -167,7 +167,7 @@
                             <label class="block text-sm font-medium text-gray-600 mb-1">
                                 {{ $field->label }}
                                 @if ($field->is_required) <span class="text-brand-red">*</span> @endif
-                                @if ($field->field_type === 'pick_n') <span class="text-xs text-gray-400">({{ __('Pick :n', ['n' => $field->pick_count]) }})</span> @endif
+                                @if ($field->field_type === 'pick_n') <span class="text-xs text-gray-400">({{ __('Pick at least :n', ['n' => $field->pick_count]) }})</span> @endif
                                 <x-field-help :text="$field->help_text" />
                             </label>
 
@@ -205,25 +205,11 @@
                                     @break
 
                                 @case('checkbox')
+                                @case('pick_n')
                                     <div class="flex flex-wrap gap-2 pt-1">
                                         @foreach ($field->options as $option)
                                             <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold">
                                                 <input type="checkbox" wire:model.live="fieldValues.{{ $field->id }}" value="{{ $option->value }}"
-                                                    class="rounded text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
-                                                {{ $option->value }}
-                                            </label>
-                                        @endforeach
-                                    </div>
-                                    @break
-
-                                @case('pick_n')
-                                    @php($selectedCount = count($this->fieldValues[$field->id] ?? []))
-                                    <div class="flex flex-wrap gap-2 pt-1">
-                                        @foreach ($field->options as $option)
-                                            @php($isChecked = in_array($option->value, $this->fieldValues[$field->id] ?? []))
-                                            <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed">
-                                                <input type="checkbox" wire:model.live="fieldValues.{{ $field->id }}" value="{{ $option->value }}"
-                                                    @disabled($field->pick_count && ! $isChecked && $selectedCount >= $field->pick_count)
                                                     class="rounded text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
                                                 {{ $option->value }}
                                             </label>
