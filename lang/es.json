@@ -497,5 +497,7 @@
     "Content preview": "Vista previa del contenido",
     "No content stored for this email.": "No hay contenido guardado para este correo.",
     "Email resent to :email.": "Correo reenviado a :email.",
-    "Could not resend the email: :error": "No se pudo reenviar el correo: :error"
+    "Could not resend the email: :error": "No se pudo reenviar el correo: :error",
+    "Move up": "Subir",
+    "Move down": "Bajar"
 }

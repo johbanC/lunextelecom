@@ -8,6 +8,8 @@ use App\Models\FieldOption;
 use App\Models\Group;
 use App\Models\Issue;
 use App\Models\TicketType;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -85,7 +87,7 @@ class CatalogBrowser extends Component
             'default_related_to_group_id' => null,
             'sla_yellow_days' => 2,
             'sla_red_days' => 3,
-            'sort_order' => 0,
+            'sort_order' => Category::whereHas('ticketType', fn ($q) => $q->where('code', $this->ticketTypeCode))->count(),
         ];
         $this->showCategoryForm = true;
     }
@@ -142,6 +144,17 @@ class CatalogBrowser extends Component
         $category->update(['is_active' => ! $category->is_active]);
     }
 
+    public function moveCategory(int $categoryId, string $direction): void
+    {
+        $this->authorize('catalog.manage');
+
+        $categories = Category::whereHas('ticketType', fn ($q) => $q->where('code', $this->ticketTypeCode))
+            ->orderBy('sort_order')
+            ->get();
+
+        $this->reorder($categories, $categoryId, $direction);
+    }
+
     /*
     |--------------------------------------------------------------------
     | Issues
@@ -150,7 +163,11 @@ class CatalogBrowser extends Component
 
     public function newIssue(): void
     {
-        $this->issueForm = ['id' => null, 'name' => '', 'sort_order' => 0];
+        $this->issueForm = [
+            'id' => null,
+            'name' => '',
+            'sort_order' => Issue::where('category_id', $this->categoryId)->count(),
+        ];
         $this->showIssueForm = true;
     }
 
@@ -192,6 +209,15 @@ class CatalogBrowser extends Component
         $issue->update(['is_active' => ! $issue->is_active]);
     }
 
+    public function moveIssue(int $issueId, string $direction): void
+    {
+        $this->authorize('catalog.manage');
+
+        $issues = Issue::where('category_id', $this->categoryId)->orderBy('sort_order')->get();
+
+        $this->reorder($issues, $issueId, $direction);
+    }
+
     /*
     |--------------------------------------------------------------------
     | Campos (Field definitions)
@@ -207,7 +233,7 @@ class CatalogBrowser extends Component
             'is_required' => false,
             'help_text' => '',
             'pick_count' => null,
-            'sort_order' => 0,
+            'sort_order' => FieldDefinition::where('issue_id', $this->issueId)->count(),
             'options' => [],
         ];
         $this->showFieldForm = true;
@@ -264,8 +290,21 @@ class CatalogBrowser extends Component
             ]
         );
 
-        $this->showFieldForm = false;
-        $this->editField($field->id);
+        $needsOptions = in_array($data['field_type'], [
+            FieldDefinition::TYPE_SELECT,
+            FieldDefinition::TYPE_CHECKBOX,
+            FieldDefinition::TYPE_RADIO,
+            FieldDefinition::TYPE_PICK_N,
+        ], true);
+
+        if ($needsOptions) {
+            // Se deja el modal abierto (recargado con el id ya asignado) para
+            // que se puedan agregar opciones sin tener que reabrirlo — la
+            // sección de Options solo aparece cuando fieldForm.id ya existe.
+            $this->editField($field->id);
+        } else {
+            $this->showFieldForm = false;
+        }
     }
 
     public function deleteField(int $fieldId): void
@@ -282,6 +321,50 @@ class CatalogBrowser extends Component
 
         $field->delete();
         $this->showFieldForm = false;
+    }
+
+    public function moveField(int $fieldId, string $direction): void
+    {
+        $this->authorize('catalog.manage');
+
+        $fields = FieldDefinition::where('issue_id', $this->issueId)->orderBy('sort_order')->get();
+
+        $this->reorder($fields, $fieldId, $direction);
+    }
+
+    /**
+     * Sube o baja un elemento un puesto dentro de una lista ordenable
+     * (categorías, issues o campos) — reemplaza tener que escribir un
+     * número de "orden" a mano. Primero normaliza a valores secuenciales
+     * (varios elementos podían compartir sort_order = 0 desde antes),
+     * así el primer clic ya reordena de forma predecible.
+     *
+     * @param  Collection<int, Model>  $items
+     */
+    protected function reorder(Collection $items, int $id, string $direction): void
+    {
+        $items = $items->values();
+
+        $items->each(function (Model $item, int $index) {
+            if ($item->sort_order !== $index) {
+                $item->update(['sort_order' => $index]);
+            }
+        });
+
+        $index = $items->search(fn (Model $item) => $item->id === $id);
+
+        if ($index === false) {
+            return;
+        }
+
+        $swapWith = $direction === 'up' ? $index - 1 : $index + 1;
+
+        if ($swapWith < 0 || $swapWith >= $items->count()) {
+            return;
+        }
+
+        $items[$index]->update(['sort_order' => $swapWith]);
+        $items[$swapWith]->update(['sort_order' => $index]);
     }
 
     public function addFieldOption(): void

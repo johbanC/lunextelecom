@@ -51,6 +51,16 @@
             <ul class="divide-y divide-gray-100">
                 @forelse ($categories as $category)
                     <li class="flex items-center justify-between px-4 py-3 text-sm gap-2 {{ $categoryId === $category->id ? 'bg-brand-blue-50' : '' }}">
+                        <div class="flex flex-col shrink-0">
+                            <button wire:click="moveCategory({{ $category->id }}, 'up')" @if ($loop->first) disabled @endif
+                                class="text-gray-300 hover:text-brand-blue disabled:opacity-30 disabled:hover:text-gray-300" title="{{ __('Move up') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5"><path fill-rule="evenodd" d="M10 4.5a.75.75 0 0 1 .53.22l5 5a.75.75 0 1 1-1.06 1.06L10.75 7.06V15a.75.75 0 0 1-1.5 0V7.06L5.53 10.78a.75.75 0 1 1-1.06-1.06l5-5A.75.75 0 0 1 10 4.5Z" clip-rule="evenodd" /></svg>
+                            </button>
+                            <button wire:click="moveCategory({{ $category->id }}, 'down')" @if ($loop->last) disabled @endif
+                                class="text-gray-300 hover:text-brand-blue disabled:opacity-30 disabled:hover:text-gray-300" title="{{ __('Move down') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5"><path fill-rule="evenodd" d="M10 15.5a.75.75 0 0 1-.53-.22l-5-5a.75.75 0 1 1 1.06-1.06l3.72 3.72V5a.75.75 0 0 1 1.5 0v7.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-5 5a.75.75 0 0 1-.53.22Z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
                         <button wire:click="selectCategory({{ $category->id }})"
                             class="flex-1 text-left flex items-center gap-2 {{ $categoryId === $category->id ? 'text-brand-blue-700 font-semibold' : 'text-gray-600 hover:text-gray-800' }} {{ ! $category->is_active ? 'opacity-50' : '' }}">
                             {{ $category->name }}
@@ -83,6 +93,16 @@
             <ul class="divide-y divide-gray-100">
                 @forelse ($issues as $issue)
                     <li class="flex items-center justify-between px-4 py-3 text-sm gap-2 {{ $issueId === $issue->id ? 'bg-brand-blue-50' : '' }}">
+                        <div class="flex flex-col shrink-0">
+                            <button wire:click="moveIssue({{ $issue->id }}, 'up')" @if ($loop->first) disabled @endif
+                                class="text-gray-300 hover:text-brand-blue disabled:opacity-30 disabled:hover:text-gray-300" title="{{ __('Move up') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5"><path fill-rule="evenodd" d="M10 4.5a.75.75 0 0 1 .53.22l5 5a.75.75 0 1 1-1.06 1.06L10.75 7.06V15a.75.75 0 0 1-1.5 0V7.06L5.53 10.78a.75.75 0 1 1-1.06-1.06l5-5A.75.75 0 0 1 10 4.5Z" clip-rule="evenodd" /></svg>
+                            </button>
+                            <button wire:click="moveIssue({{ $issue->id }}, 'down')" @if ($loop->last) disabled @endif
+                                class="text-gray-300 hover:text-brand-blue disabled:opacity-30 disabled:hover:text-gray-300" title="{{ __('Move down') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5"><path fill-rule="evenodd" d="M10 15.5a.75.75 0 0 1-.53-.22l-5-5a.75.75 0 1 1 1.06-1.06l3.72 3.72V5a.75.75 0 0 1 1.5 0v7.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-5 5a.75.75 0 0 1-.53.22Z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
                         <button wire:click="selectIssue({{ $issue->id }})"
                             class="flex-1 text-left {{ $issueId === $issue->id ? 'text-brand-blue-700 font-semibold' : 'text-gray-600 hover:text-gray-800' }} {{ ! $issue->is_active ? 'opacity-50' : '' }}">
                             {{ $issue->name }}
@@ -116,16 +136,28 @@
                     @foreach ($selectedIssue->fieldDefinitions as $field)
                         <li class="px-4 py-3 text-sm">
                             <div class="flex items-center justify-between gap-2">
-                                <button wire:click="editField({{ $field->id }})" class="text-left font-medium text-gray-700 hover:text-brand-blue">{{ $field->label }}</button>
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="flex flex-col shrink-0">
+                                        <button wire:click="moveField({{ $field->id }}, 'up')" @if ($loop->first) disabled @endif
+                                            class="text-gray-300 hover:text-brand-blue disabled:opacity-30 disabled:hover:text-gray-300" title="{{ __('Move up') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5"><path fill-rule="evenodd" d="M10 4.5a.75.75 0 0 1 .53.22l5 5a.75.75 0 1 1-1.06 1.06L10.75 7.06V15a.75.75 0 0 1-1.5 0V7.06L5.53 10.78a.75.75 0 1 1-1.06-1.06l5-5A.75.75 0 0 1 10 4.5Z" clip-rule="evenodd" /></svg>
+                                        </button>
+                                        <button wire:click="moveField({{ $field->id }}, 'down')" @if ($loop->last) disabled @endif
+                                            class="text-gray-300 hover:text-brand-blue disabled:opacity-30 disabled:hover:text-gray-300" title="{{ __('Move down') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5"><path fill-rule="evenodd" d="M10 15.5a.75.75 0 0 1-.53-.22l-5-5a.75.75 0 1 1 1.06-1.06l3.72 3.72V5a.75.75 0 0 1 1.5 0v7.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-5 5a.75.75 0 0 1-.53.22Z" clip-rule="evenodd" /></svg>
+                                        </button>
+                                    </div>
+                                    <button wire:click="editField({{ $field->id }})" class="text-left font-medium text-gray-700 hover:text-brand-blue truncate">{{ $field->label }}</button>
+                                </div>
                                 @if ($field->is_required)
                                     <span class="text-[10px] font-bold uppercase text-brand-red shrink-0">{{ __('Required') }}</span>
                                 @endif
                             </div>
-                            <div class="text-xs text-gray-400 mt-0.5">
+                            <div class="text-xs text-gray-400 mt-0.5 pl-[22px]">
                                 {{ $fieldTypes[$field->field_type] ?? $field->field_type }}@if ($field->pick_count) &middot; {{ __('Pick :n', ['n' => $field->pick_count]) }} @endif
                             </div>
                             @if ($field->options->isNotEmpty())
-                                <div class="mt-1.5 flex flex-wrap gap-1">
+                                <div class="mt-1.5 pl-[22px] flex flex-wrap gap-1">
                                     @foreach ($field->options as $option)
                                         <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[11px]">{{ $option->value }}</span>
                                     @endforeach
@@ -176,10 +208,6 @@
                             @error('categoryForm.sla_red_days') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Sort order') }}</label>
-                        <input type="number" min="0" wire:model="categoryForm.sort_order" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                    </div>
                     <div class="flex items-center justify-end gap-2 pt-2">
                         <button type="button" wire:click="$set('showCategoryForm', false)" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition">{{ __('Cancel') }}</button>
                         <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-blue text-white hover:bg-brand-blue-600 transition">{{ __('Save') }}</button>
@@ -200,10 +228,6 @@
                         <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Name') }}</label>
                         <input type="text" wire:model="issueForm.name" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
                         @error('issueForm.name') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Sort order') }}</label>
-                        <input type="number" min="0" wire:model="issueForm.sort_order" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
                     </div>
                     <div class="flex items-center justify-end gap-2 pt-2">
                         <button type="button" wire:click="$set('showIssueForm', false)" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition">{{ __('Cancel') }}</button>
@@ -226,7 +250,7 @@
                         <input type="text" wire:model="fieldForm.label" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
                         @error('fieldForm.label') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="{{ $fieldForm['field_type'] === \App\Models\FieldDefinition::TYPE_PICK_N ? 'grid grid-cols-2 gap-3' : '' }}">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Type') }}</label>
                             <select wire:model.live="fieldForm.field_type" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm bg-white focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
@@ -241,19 +265,8 @@
                                 <input type="number" min="1" max="10" wire:model="fieldForm.pick_count" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
                                 @error('fieldForm.pick_count') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
                             </div>
-                        @else
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Sort order') }}</label>
-                                <input type="number" min="0" wire:model="fieldForm.sort_order" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                            </div>
                         @endif
                     </div>
-                    @if ($fieldForm['field_type'] === \App\Models\FieldDefinition::TYPE_PICK_N)
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Sort order') }}</label>
-                            <input type="number" min="0" wire:model="fieldForm.sort_order" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                        </div>
-                    @endif
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Help text (tooltip)') }}</label>
                         <textarea wire:model="fieldForm.help_text" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition"></textarea>
