@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\EmailLog;
 use App\Models\NotificationRule;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Notifications\TicketEventNotification;
+use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Resuelve qué usuarios deben enterarse de un evento de ticket y por qué
@@ -77,7 +80,32 @@ class TicketNotifier
                 continue;
             }
 
-            $entry['user']->notify(new TicketEventNotification($ticket, $event, $actor, $payload, $channels));
+            $trackingToken = in_array('mail', $channels, true) ? (string) Str::uuid() : null;
+
+            $notification = new TicketEventNotification($ticket, $event, $actor, $payload, $channels, $trackingToken);
+
+            $emailLog = $trackingToken ? EmailLog::create([
+                'tracking_token' => $trackingToken,
+                'to_email' => $entry['user']->email,
+                'to_name' => $entry['user']->name,
+                'user_id' => $entry['user']->id,
+                'ticket_id' => $ticket->id,
+                'event' => $event,
+                'purpose' => TicketEventNotification::purposeLabel($event),
+                'subject' => $notification->subject(),
+                'body_html' => (string) $notification->toMail($entry['user'])->render(),
+                'status' => 'pending',
+            ]) : null;
+
+            try {
+                $entry['user']->notify($notification);
+
+                $emailLog?->update(['status' => 'sent', 'sent_at' => now()]);
+            } catch (Throwable $e) {
+                $emailLog?->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
+
+                report($e);
+            }
         }
     }
 }

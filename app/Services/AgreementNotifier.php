@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Agreement;
+use App\Models\EmailLog;
 use App\Models\NotificationRule;
 use App\Notifications\AgreementSignedNotification;
+use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Notifica a los grupos configurados (NotificationRule, evento
@@ -35,7 +38,32 @@ class AgreementNotifier
                 }
 
                 $notified[$member->id] = true;
-                $member->notify(new AgreementSignedNotification($agreement));
+
+                $trackingToken = (string) Str::uuid();
+                $notification = new AgreementSignedNotification($agreement, $trackingToken);
+
+                $emailLog = EmailLog::create([
+                    'tracking_token' => $trackingToken,
+                    'to_email' => $member->email,
+                    'to_name' => $member->name,
+                    'user_id' => $member->id,
+                    'agreement_id' => $agreement->id,
+                    'event' => 'agreement_signed',
+                    'purpose' => 'Form signed',
+                    'subject' => $notification->subject(),
+                    'body_html' => (string) $notification->toMail($member)->render(),
+                    'status' => 'pending',
+                ]);
+
+                try {
+                    $member->notify($notification);
+
+                    $emailLog->update(['status' => 'sent', 'sent_at' => now()]);
+                } catch (Throwable $e) {
+                    $emailLog->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
+
+                    report($e);
+                }
             }
         }
     }

@@ -47,6 +47,13 @@
                             {{ __('Reports') }}
                         </a>
                     @endif
+                    @can('email_log.view')
+                        <a href="{{ route('admin.email-log.index') }}"
+                            class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                {{ request()->routeIs('admin.email-log.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                            {{ __('Emails') }}
+                        </a>
+                    @endcan
                     @can('tickets.view.own')
                         <a href="{{ route('admin.help.index') }}"
                             class="px-3 py-1.5 rounded-lg text-sm font-semibold transition

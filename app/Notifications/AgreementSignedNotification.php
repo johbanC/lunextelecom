@@ -17,7 +17,7 @@ class AgreementSignedNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(public Agreement $agreement) {}
+    public function __construct(public Agreement $agreement, public ?string $trackingToken = null) {}
 
     /**
      * @return array<int, string>
@@ -54,6 +54,7 @@ class AgreementSignedNotification extends Notification
                 'ctaUrl' => route('admin.agreements.show', $agreement),
                 'signatureName' => null,
                 'signatureRole' => null,
+                'trackingUrl' => $this->trackingToken ? route('email.tracking', $this->trackingToken) : null,
             ]);
     }
 
@@ -70,7 +71,7 @@ class AgreementSignedNotification extends Notification
         ];
     }
 
-    protected function subject(): string
+    public function subject(): string
     {
         return "Form signed: {$this->agreement->account_id}";
     }

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AgreementController;
+use App\Http\Controllers\Admin\EmailLogController;
+use App\Http\Controllers\EmailTrackingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAgreementController;
 use App\Models\Attachment;
@@ -9,6 +11,10 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::redirect('/', '/admin/agreements');
+
+Route::get('email-tracking/{token}', [EmailTrackingController::class, 'pixel'])
+    ->where('token', '[0-9a-fA-F\-]{36}')
+    ->name('email.tracking');
 
 Route::get('lang/{locale}', function (string $locale) {
     if (in_array($locale, ['en', 'es', 'hi'], true)) {
@@ -80,6 +86,12 @@ Route::middleware('auth')->group(function () {
         Route::get('reports', function () {
             return view('admin.reports.index');
         })->name('reports.index');
+
+        Route::get('email-log', function () {
+            return view('admin.email-log.index');
+        })->name('email-log.index')->middleware('can:email_log.view');
+        Route::get('email-log/{emailLog}', [EmailLogController::class, 'show'])->name('email-log.show')->middleware('can:email_log.view');
+        Route::post('email-log/{emailLog}/resend', [EmailLogController::class, 'resend'])->name('email-log.resend')->middleware('can:email_log.view');
 
         Route::get('help', function () {
             return view('admin.help.index');

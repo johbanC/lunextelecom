@@ -31,6 +31,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.manage',
             'notification_rules.manage',
             'help.manage',
+            'email_log.view',
         ];
 
         foreach ($permissions as $permission) {
@@ -59,6 +60,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'tickets.view.all',
             'reports.view.all',
             'reports.export',
+            'email_log.view',
         ]));
 
         $admin = Role::findOrCreate('Admin');

@@ -47,6 +47,7 @@ class TicketEventNotification extends Notification
         public ?User $actor,
         public array $payload,
         public array $channels,
+        public ?string $trackingToken = null,
     ) {}
 
     /**
@@ -69,6 +70,7 @@ class TicketEventNotification extends Notification
                 'ctaUrl' => route('admin.tickets.show', $this->ticket),
                 'signatureName' => $this->actor?->name,
                 'signatureRole' => $this->signatureRole(),
+                'trackingUrl' => $this->trackingToken ? route('email.tracking', $this->trackingToken) : null,
             ]);
     }
 
@@ -95,7 +97,7 @@ class TicketEventNotification extends Notification
      * evento posterior lo reenvía con "Re:", y al pasar a Resolved
      * se antepone "done --" igual que hacía el equipo a mano.
      */
-    protected function subject(): string
+    public function subject(): string
     {
         $base = $this->baseSubject();
 
@@ -230,6 +232,24 @@ class TicketEventNotification extends Notification
         }
 
         return null;
+    }
+
+    /**
+     * Etiqueta legible del evento para la auditoría de correos (app/Models/
+     * EmailLog.php) — texto interno en inglés, traducido con __() al
+     * mostrarse, igual que el resto de etiquetas de este sistema.
+     */
+    public static function purposeLabel(string $event): string
+    {
+        return match ($event) {
+            self::EVENT_CREATED => 'Ticket created',
+            self::EVENT_STATUS_CHANGED => 'Status changed',
+            self::EVENT_REASSIGNED => 'Reassigned',
+            self::EVENT_COMMENT_ADDED => 'Comment added',
+            self::EVENT_SLA_WARNING => 'SLA warning',
+            self::EVENT_SLA_BREACHED => 'SLA breached',
+            default => $event,
+        };
     }
 
     public static function statusLabel(string $status): string

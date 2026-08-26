@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Tickets;
 
 use App\Models\Category;
+use App\Models\EmailLog;
 use App\Models\Group;
 use App\Models\Ticket;
 use App\Models\TicketType;
@@ -173,6 +174,7 @@ class DemoDataGenerator extends Component
         $demoTicketIds = Ticket::where('is_demo', true)->pluck('id');
 
         DB::table('notifications')->whereIn('data->ticket_id', $demoTicketIds)->delete();
+        EmailLog::whereIn('ticket_id', $demoTicketIds)->delete();
 
         Ticket::where('is_demo', true)->get()->each(function (Ticket $ticket) {
             foreach ($ticket->attachments as $attachment) {

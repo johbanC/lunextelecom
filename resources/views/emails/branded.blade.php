@@ -70,3 +70,6 @@
         </td>
     </tr>
 </table>
+@if (! empty($trackingUrl))
+    <img src="{{ $trackingUrl }}" width="1" height="1" alt="" style="display:block;border:0;outline:none;">
+@endif
