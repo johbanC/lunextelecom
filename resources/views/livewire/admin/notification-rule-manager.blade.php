@@ -11,7 +11,7 @@
 
     <x-how-it-works>
             <p class="text-sm text-gray-700 mb-4">
-                {{ __('Each rule means "when this event happens, notify this group". A ticket also always emails whoever it is directly assigned to, even without a rule — rules are for everyone else who should know.') }}
+                {{ __('When a ticket is created, two things happen automatically, without any rule: whoever it is directly assigned to gets emailed, and everyone in its "Related to" group gets emailed. The rules below are only for extra cases beyond that — e.g. also notifying a different group, or notifying about other events like a status change or an SLA about to breach.') }}
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
@@ -19,7 +19,7 @@
                     <ol class="space-y-1.5 text-sm text-gray-600 list-decimal list-inside">
                         <li>{{ __('Event — what should trigger the notification.') }}</li>
                         <li>{{ __('Category (optional) — leave blank to apply to every category, or pick one to limit the rule to it.') }}</li>
-                        <li>{{ __("Only for team (optional) — leave blank to apply no matter which team the ticket is related to, or pick one so this rule only fires for tickets related to that team. Use this so a team only gets notified about its own tickets.") }}</li>
+                        <li>{{ __("Only for team (optional) — leave blank to apply no matter which team the ticket is related to, or pick one so this rule only fires for tickets related to that team.") }}</li>
                         <li>{{ __('Notify group — every member of that group gets notified.') }}</li>
                         <li>{{ __('Channel — email, in-platform (the bell), or both.') }}</li>
                     </ol>

@@ -13,8 +13,8 @@ use Throwable;
 /**
  * Resuelve qué usuarios deben enterarse de un evento de ticket y por qué
  * canal, combinando las NotificationRule administrables (por categoría →
- * grupo) con un aviso directo al asesor asignado — docs/SPEC_DESARROLLO.md
- * sección 8.1.
+ * grupo) con un aviso directo al asesor asignado y, al crear el ticket, a
+ * todo el grupo "Related to" — docs/SPEC_DESARROLLO.md sección 8.1.
  */
 class TicketNotifier
 {
@@ -27,9 +27,18 @@ class TicketNotifier
         ?User $actor,
         array $payload = [],
         ?int $directAssigneeId = null,
+        bool $notifyRelatedGroup = false,
     ): void {
         /** @var array<int, array{user: User, channels: array<string, bool>}> $recipients */
         $recipients = [];
+
+        if ($notifyRelatedGroup && $ticket->related_to_group_id) {
+            foreach ($ticket->relatedToGroup?->members ?? [] as $member) {
+                $recipients[$member->id]['user'] = $member;
+                $recipients[$member->id]['channels']['mail'] = true;
+                $recipients[$member->id]['channels']['database'] = true;
+            }
+        }
 
         $rules = NotificationRule::query()
             ->where('event', $event)

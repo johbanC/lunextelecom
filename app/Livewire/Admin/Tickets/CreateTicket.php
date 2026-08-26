@@ -314,6 +314,7 @@ class CreateTicket extends Component
             Auth::user(),
             ['status' => $ticket->status, 'priority' => $ticket->priority],
             directAssigneeId: $ticket->assignee_id,
+            notifyRelatedGroup: true,
         );
 
         session()->flash('status', __('Ticket :number created.', ['number' => $ticket->ticket_number]));
