@@ -33,11 +33,12 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">{{ __(ucwords(str_replace('_', ' ', $key))) }}</label>
                         @if ($key === 'retailer_code')
-                            <div class="relative" x-data="{ copied: false }">
+                            <div class="relative" x-data="{ copied: false, hasValue: false }" x-init="hasValue = $refs.retailerCodeInput.value.length > 0">
                                 <input type="text" wire:model="header.{{ $key }}" x-ref="retailerCodeInput"
-                                    list="retailer-codes-list" placeholder="{{ __('Lookup code from the other platform') }}" oninput="this.value = this.value.toUpperCase()"
+                                    list="retailer-codes-list" placeholder="{{ __('Lookup code from the other platform') }}"
+                                    @input="$el.value = $el.value.toUpperCase(); hasValue = $el.value.length > 0"
                                     class="w-full h-11 border border-gray-300 rounded-lg pl-3 pr-10 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition uppercase placeholder:normal-case">
-                                <button type="button"
+                                <button type="button" x-show="hasValue" x-cloak
                                     @click="navigator.clipboard.writeText($refs.retailerCodeInput.value).then(() => { copied = true; setTimeout(() => copied = false, 1500); })"
                                     class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-brand-blue transition"
                                     title="{{ __('Copy Retailer Code') }}">
