@@ -37,7 +37,7 @@ class AgreementSignedNotification extends Notification
             "Owner's Name" => $agreement->owner_name,
             'Phone' => $agreement->phone,
             'Address' => $agreement->address,
-            'Signed' => $agreement->signed_at->format('d/m/Y H:i'),
+            'Signed' => $agreement->signed_at->format('m/d/Y H:i'),
         ];
 
         if ($agreement->total_amount) {

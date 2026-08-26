@@ -108,12 +108,12 @@
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-brand-blue-50 text-brand-blue-700 text-xs font-bold">
                                     {{ __('Opened') }}
                                 </span>
-                                <div class="text-xs text-gray-400 mt-1">{{ $log->opened_at->format('d/m/Y H:i') }}</div>
+                                <div class="text-xs text-gray-400 mt-1">{{ $log->opened_at->format('m/d/Y H:i') }}</div>
                             @else
                                 <span class="text-xs text-gray-400">{{ __('Not opened') }}</span>
                             @endif
                         </td>
-                        <td class="p-4 text-gray-500">{{ ($log->sent_at ?? $log->created_at)->format('d/m/Y H:i') }}</td>
+                        <td class="p-4 text-gray-500">{{ ($log->sent_at ?? $log->created_at)->format('m/d/Y H:i') }}</td>
                     </tr>
                 @empty
                     <tr>

@@ -129,7 +129,7 @@
                             <x-sla-chip :status="$ticket->slaStatus()" />
                         </td>
                         <td class="p-4 text-gray-600">{{ $ticket->assignee?->name ?? '—' }}</td>
-                        <td class="p-4 text-gray-500">{{ $ticket->created_at->format('d/m/Y H:i') }}</td>
+                        <td class="p-4 text-gray-500">{{ $ticket->created_at->format('m/d/Y H:i') }}</td>
                     </tr>
                 @empty
                     <tr>

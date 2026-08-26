@@ -32,9 +32,28 @@
                 @foreach (array_keys($header) as $key)
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">{{ __(ucwords(str_replace('_', ' ', $key))) }}</label>
-                        <input type="text" wire:model="header.{{ $key }}"
-                            @if ($key === 'retailer_code') list="retailer-codes-list" placeholder="{{ __('Lookup code from the other platform') }}" oninput="this.value = this.value.toUpperCase()" @endif
-                            class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition{{ $key === 'retailer_code' ? ' uppercase placeholder:normal-case' : '' }}">
+                        @if ($key === 'retailer_code')
+                            <div class="relative" x-data="{ copied: false }">
+                                <input type="text" wire:model="header.{{ $key }}" x-ref="retailerCodeInput"
+                                    list="retailer-codes-list" placeholder="{{ __('Lookup code from the other platform') }}" oninput="this.value = this.value.toUpperCase()"
+                                    class="w-full h-11 border border-gray-300 rounded-lg pl-3 pr-10 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition uppercase placeholder:normal-case">
+                                <button type="button"
+                                    @click="navigator.clipboard.writeText($refs.retailerCodeInput.value).then(() => { copied = true; setTimeout(() => copied = false, 1500); })"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-brand-blue transition"
+                                    title="{{ __('Copy Retailer Code') }}">
+                                    <svg x-show="!copied" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                                        <path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z" />
+                                        <path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-6.879a1.5 1.5 0 0 0-.44-1.06L9.44 5.439A1.5 1.5 0 0 0 8.378 5H4.5Z" />
+                                    </svg>
+                                    <svg x-show="copied" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4 text-emerald-500">
+                                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        @else
+                            <input type="text" wire:model="header.{{ $key }}"
+                                class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                        @endif
                         @error("header.{$key}") <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
                     </div>
                 @endforeach
@@ -185,11 +204,25 @@
                                     @break
 
                                 @case('checkbox')
-                                @case('pick_n')
                                     <div class="flex flex-wrap gap-2 pt-1">
                                         @foreach ($field->options as $option)
                                             <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold">
                                                 <input type="checkbox" wire:model.live="fieldValues.{{ $field->id }}" value="{{ $option->value }}"
+                                                    class="rounded text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
+                                                {{ $option->value }}
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    @break
+
+                                @case('pick_n')
+                                    @php($selectedCount = count($this->fieldValues[$field->id] ?? []))
+                                    <div class="flex flex-wrap gap-2 pt-1">
+                                        @foreach ($field->options as $option)
+                                            @php($isChecked = in_array($option->value, $this->fieldValues[$field->id] ?? []))
+                                            <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed">
+                                                <input type="checkbox" wire:model.live="fieldValues.{{ $field->id }}" value="{{ $option->value }}"
+                                                    @disabled($field->pick_count && ! $isChecked && $selectedCount >= $field->pick_count)
                                                     class="rounded text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
                                                 {{ $option->value }}
                                             </label>

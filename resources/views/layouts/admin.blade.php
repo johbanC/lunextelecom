@@ -64,6 +64,21 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
+                <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs font-semibold"
+                    x-data="{ time: '' }"
+                    x-init="
+                        const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', month: 'short', day: '2-digit', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZoneName: 'short' });
+                        const tick = () => { time = fmt.format(new Date()); };
+                        tick();
+                        setInterval(tick, 1000);
+                    "
+                    title="{{ __('This platform always shows and saves Atlanta (Eastern) time, no matter where you connect from.') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4 text-gray-400 shrink-0">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clip-rule="evenodd" />
+                    </svg>
+                    <span x-text="time"></span>
+                </div>
+
                 <x-locale-switcher />
 
                 <livewire:admin.notification-bell />

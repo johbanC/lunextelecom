@@ -57,13 +57,13 @@
 
             <div>
                 <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ __('Sent date') }}</div>
-                <div class="text-sm text-gray-800">{{ ($emailLog->sent_at ?? $emailLog->created_at)->format('d/m/Y H:i:s') }}</div>
+                <div class="text-sm text-gray-800">{{ ($emailLog->sent_at ?? $emailLog->created_at)->format('m/d/Y H:i:s') }}</div>
             </div>
 
             <div>
                 <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ __('Opened') }}</div>
                 @if ($emailLog->opened_at)
-                    <div class="text-sm text-gray-800">{{ __('Yes') }} — {{ $emailLog->opened_at->format('d/m/Y H:i') }}</div>
+                    <div class="text-sm text-gray-800">{{ __('Yes') }} — {{ $emailLog->opened_at->format('m/d/Y H:i') }}</div>
                 @else
                     <div class="text-sm text-gray-500">{{ __('Not opened') }}</div>
                 @endif

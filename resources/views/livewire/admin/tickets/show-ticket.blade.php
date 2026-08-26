@@ -20,7 +20,25 @@
                         @if ($value)
                             <div>
                                 <div class="text-xs text-gray-400">{{ __(ucwords(str_replace('_', ' ', $key))) }}</div>
-                                <div class="text-gray-700 font-medium">{{ $value }}</div>
+                                @if ($key === 'retailer_code')
+                                    <div class="flex items-center gap-1.5" x-data="{ copied: false }">
+                                        <span class="text-gray-700 font-medium">{{ $value }}</span>
+                                        <button type="button"
+                                            @click="navigator.clipboard.writeText(@js((string) $value)).then(() => { copied = true; setTimeout(() => copied = false, 1500); })"
+                                            class="text-gray-400 hover:text-brand-blue transition"
+                                            title="{{ __('Copy Retailer Code') }}">
+                                            <svg x-show="!copied" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5">
+                                                <path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z" />
+                                                <path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-6.879a1.5 1.5 0 0 0-.44-1.06L9.44 5.439A1.5 1.5 0 0 0 8.378 5H4.5Z" />
+                                            </svg>
+                                            <svg x-show="copied" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-3.5 text-emerald-500">
+                                                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @else
+                                    <div class="text-gray-700 font-medium">{{ $value }}</div>
+                                @endif
                             </div>
                         @endif
                     @endforeach
@@ -87,7 +105,7 @@
                                         @endforeach
                                     </ul>
                                 @endif
-                                <div class="text-xs text-gray-400">{{ $event->created_at->format('d/m/Y H:i') }}</div>
+                                <div class="text-xs text-gray-400">{{ $event->created_at->format('m/d/Y H:i') }}</div>
                             </div>
                         </li>
                     @endforeach
@@ -102,7 +120,7 @@
                         <li class="text-sm border border-gray-100 rounded-lg p-3">
                             <div class="flex items-center justify-between">
                                 <span class="font-semibold text-gray-700">{{ $comment->user->name }}</span>
-                                <span class="text-xs text-gray-400">{{ $comment->created_at->format('d/m/Y H:i') }}</span>
+                                <span class="text-xs text-gray-400">{{ $comment->created_at->format('m/d/Y H:i') }}</span>
                             </div>
                             <p class="text-gray-600 mt-1">{{ $comment->body }}</p>
                         </li>
@@ -144,7 +162,7 @@
                                 <div class="text-xs text-gray-400">
                                     {{ number_format($attachment->size / 1024, 0) }} KB &middot;
                                     {{ __('uploaded by') }} {{ $attachment->uploader?->name ?? __('Unknown') }} &middot;
-                                    {{ $attachment->created_at->format('d/m/Y H:i') }}
+                                    {{ $attachment->created_at->format('m/d/Y H:i') }}
                                 </div>
                             </div>
                         </li>
@@ -218,7 +236,7 @@
 
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5 text-sm text-gray-500 space-y-1">
                 <div>{{ __('Created by') }} <span class="font-medium text-gray-700">{{ $ticket->creator->name }}</span></div>
-                <div>{{ $ticket->created_at->format('d/m/Y H:i') }}</div>
+                <div>{{ $ticket->created_at->format('m/d/Y H:i') }}</div>
             </div>
         </div>
     </div>
@@ -274,11 +292,25 @@
                                         @break
 
                                     @case('checkbox')
-                                    @case('pick_n')
                                         <div class="flex flex-wrap gap-2 pt-1">
                                             @foreach ($field->options as $option)
                                                 <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold">
                                                     <input type="checkbox" wire:model.live="fieldValuesForm.{{ $field->id }}" value="{{ $option->value }}"
+                                                        class="rounded text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
+                                                    {{ $option->value }}
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        @break
+
+                                    @case('pick_n')
+                                        @php($selectedCount = count($this->fieldValuesForm[$field->id] ?? []))
+                                        <div class="flex flex-wrap gap-2 pt-1">
+                                            @foreach ($field->options as $option)
+                                                @php($isChecked = in_array($option->value, $this->fieldValuesForm[$field->id] ?? []))
+                                                <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed">
+                                                    <input type="checkbox" wire:model.live="fieldValuesForm.{{ $field->id }}" value="{{ $option->value }}"
+                                                        @disabled($field->pick_count && ! $isChecked && $selectedCount >= $field->pick_count)
                                                         class="rounded text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
                                                     {{ $option->value }}
                                                 </label>
