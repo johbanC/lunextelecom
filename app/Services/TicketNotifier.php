@@ -35,6 +35,7 @@ class TicketNotifier
             ->where('event', $event)
             ->where('is_active', true)
             ->where(fn ($q) => $q->whereNull('category_id')->orWhere('category_id', $ticket->category_id))
+            ->where(fn ($q) => $q->whereNull('related_to_group_id')->orWhere('related_to_group_id', $ticket->related_to_group_id))
             ->with('group.members')
             ->get();
 

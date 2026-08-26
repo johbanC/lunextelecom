@@ -19,6 +19,7 @@
                     <ol class="space-y-1.5 text-sm text-gray-600 list-decimal list-inside">
                         <li>{{ __('Event — what should trigger the notification.') }}</li>
                         <li>{{ __('Category (optional) — leave blank to apply to every category, or pick one to limit the rule to it.') }}</li>
+                        <li>{{ __("Only for team (optional) — leave blank to apply no matter which team the ticket is related to, or pick one so this rule only fires for tickets related to that team. Use this so a team only gets notified about its own tickets.") }}</li>
                         <li>{{ __('Notify group — every member of that group gets notified.') }}</li>
                         <li>{{ __('Channel — email, in-platform (the bell), or both.') }}</li>
                     </ol>
@@ -43,6 +44,7 @@
                 <tr class="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-400">
                     <th class="p-4 font-semibold">{{ __('Event') }}</th>
                     <th class="p-4 font-semibold">{{ __('Category') }}</th>
+                    <th class="p-4 font-semibold">{{ __('Only for team') }}</th>
                     <th class="p-4 font-semibold">{{ __('Notifies group') }}</th>
                     <th class="p-4 font-semibold">{{ __('Channel') }}</th>
                     <th class="p-4 font-semibold">{{ __('Status') }}</th>
@@ -63,6 +65,7 @@
                             default => $rule->event,
                         } }}</td>
                         <td class="p-4 text-gray-600">{{ $rule->category->name ?? __('All categories') }}</td>
+                        <td class="p-4 text-gray-600">{{ $rule->relatedToGroup->name ?? __('Any team') }}</td>
                         <td class="p-4 text-gray-600">{{ $rule->group->name ?? '—' }}</td>
                         <td class="p-4 text-gray-600">{{ match ($rule->channel) {
                             'email' => __('Email only'),
@@ -85,7 +88,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="p-10 text-center text-gray-400">{{ __('No notification rules yet — nobody gets notified until you add one.') }}</td>
+                        <td colspan="7" class="p-10 text-center text-gray-400">{{ __('No notification rules yet — nobody gets notified until you add one.') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -121,6 +124,16 @@
                         @if (($form['event'] ?? null) === 'agreement_signed')
                             <p class="text-xs text-gray-400 mt-1">{{ __('Forms have no category — this rule applies to all signed forms.') }}</p>
                         @endif
+                    </div>
+                    <div @class(['hidden' => ($form['event'] ?? null) === 'agreement_signed'])>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Only for team (optional)') }}</label>
+                        <select wire:model="form.related_to_group_id" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm bg-white focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                            <option value="">{{ __('Any team') }}</option>
+                            @foreach ($groups as $group)
+                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-400 mt-1">{{ __("If set, this rule only fires for tickets related to this team — e.g. so Accounting only gets notified about Accounting's own tickets.") }}</p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Notify group') }}</label>

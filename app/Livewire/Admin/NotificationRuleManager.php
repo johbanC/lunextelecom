@@ -33,6 +33,7 @@ class NotificationRuleManager extends Component
             'id' => null,
             'event' => 'created',
             'category_id' => null,
+            'related_to_group_id' => null,
             'group_id' => null,
             'channel' => 'both',
             'is_active' => true,
@@ -49,6 +50,7 @@ class NotificationRuleManager extends Component
             'id' => $rule->id,
             'event' => $rule->event,
             'category_id' => $rule->category_id,
+            'related_to_group_id' => $rule->related_to_group_id,
             'group_id' => $rule->group_id,
             'channel' => $rule->channel,
             'is_active' => $rule->is_active,
@@ -63,6 +65,7 @@ class NotificationRuleManager extends Component
         $data = $this->validate([
             'form.event' => ['required', 'in:created,status_changed,reassigned,comment_added,sla_warning,sla_breached,agreement_signed'],
             'form.category_id' => ['nullable', 'exists:categories,id'],
+            'form.related_to_group_id' => ['nullable', 'exists:groups,id'],
             'form.group_id' => ['required', 'exists:groups,id'],
             'form.channel' => ['required', 'in:email,platform,both'],
             'form.is_active' => ['boolean'],
@@ -73,6 +76,7 @@ class NotificationRuleManager extends Component
             [
                 'event' => $data['event'],
                 'category_id' => $data['category_id'],
+                'related_to_group_id' => $data['related_to_group_id'],
                 'group_id' => $data['group_id'],
                 'channel' => $data['channel'],
                 'is_active' => (bool) $data['is_active'],
@@ -100,7 +104,7 @@ class NotificationRuleManager extends Component
     public function render(): View
     {
         return view('livewire.admin.notification-rule-manager', [
-            'rules' => NotificationRule::with(['category', 'group'])->orderBy('event')->get(),
+            'rules' => NotificationRule::with(['category', 'relatedToGroup', 'group'])->orderBy('event')->get(),
             'categories' => Category::orderBy('name')->get(),
             'groups' => Group::where('is_active', true)->orderBy('name')->get(),
         ]);
