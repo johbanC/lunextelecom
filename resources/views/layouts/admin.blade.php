@@ -8,12 +8,12 @@
 </head>
 <body class="min-h-screen font-sans text-gray-800 bg-gray-50 bg-[radial-gradient(circle_at_top,_var(--color-brand-blue-50),_var(--color-gray-50)_55%)]">
     <nav class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-gray-200 shadow-sm">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-6">
-                <a href="{{ route('admin.agreements.index') }}" class="flex items-center gap-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-8">
+                <a href="{{ route('admin.agreements.index') }}" class="flex items-center gap-3 shrink-0">
                     <img src="{{ asset('img/logo.png') }}" alt="Lunex Telecom" class="h-9 w-auto">
                 </a>
-                <div class="hidden sm:flex items-center gap-1">
+                <div class="hidden sm:flex items-center gap-1.5">
                     <a href="{{ route('admin.agreements.index') }}"
                         class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
                             {{ request()->routeIs('admin.agreements.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
@@ -63,8 +63,8 @@
                     @endcan
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs font-semibold"
+            <div class="flex items-center gap-4 shrink-0">
+                <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 text-xs font-semibold whitespace-nowrap"
                     x-data="{ time: '' }"
                     x-init="
                         const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', month: 'short', day: '2-digit', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZoneName: 'short' });
@@ -112,7 +112,7 @@
 
     @if (request()->routeIs('admin.tickets.*'))
         <div class="bg-white border-b border-gray-100">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-1 py-2 text-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-1 py-2 text-sm">
                 @can('viewAny', \App\Models\Ticket::class)
                     <a href="{{ route('admin.tickets.index') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.index') || request()->routeIs('admin.tickets.show') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('All tickets') }}</a>
                 @endcan
@@ -135,7 +135,7 @@
         </div>
     @endif
 
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         @if (session('status'))
             <div class="mb-6 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 px-4 py-3 text-sm font-medium shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 shrink-0 text-emerald-500">
