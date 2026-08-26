@@ -19,7 +19,7 @@
                     @foreach ($ticket->header as $key => $value)
                         @if ($value)
                             <div>
-                                <div class="text-xs text-gray-400">{{ ucwords(str_replace('_', ' ', $key)) }}</div>
+                                <div class="text-xs text-gray-400">{{ __(ucwords(str_replace('_', ' ', $key))) }}</div>
                                 <div class="text-gray-700 font-medium">{{ $value }}</div>
                             </div>
                         @endif
@@ -94,39 +94,6 @@
                 </ul>
             </div>
 
-            {{-- Adjuntos --}}
-            <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ __('Attachments') }}</h2>
-                <ul class="space-y-2 mb-4">
-                    @forelse ($ticket->attachments as $attachment)
-                        <li class="flex items-center justify-between gap-2 text-sm border border-gray-100 rounded-lg p-3">
-                            <div class="min-w-0">
-                                <a href="{{ route('admin.tickets.attachments.download', [$ticket, $attachment]) }}" class="font-medium text-brand-blue hover:underline truncate block">{{ $attachment->original_name }}</a>
-                                <div class="text-xs text-gray-400">
-                                    {{ number_format($attachment->size / 1024, 0) }} KB &middot;
-                                    {{ __('uploaded by') }} {{ $attachment->uploader?->name ?? __('Unknown') }} &middot;
-                                    {{ $attachment->created_at->format('d/m/Y H:i') }}
-                                </div>
-                            </div>
-                        </li>
-                    @empty
-                        <li class="text-sm text-gray-400">{{ __('No attachments yet.') }}</li>
-                    @endforelse
-                </ul>
-                @can('attach', $ticket)
-                    <form wire:submit="uploadAttachments" class="space-y-2">
-                        <input type="file" wire:model="newAttachments" multiple
-                            class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-600 file:text-xs file:font-semibold hover:file:bg-gray-200">
-                        @error('newAttachments') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
-                        @error('newAttachments.*') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
-                        <div wire:loading wire:target="newAttachments" class="text-xs text-gray-400">{{ __('Uploading…') }}</div>
-                        <button type="submit" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-brand-blue-600 transition">
-                            {{ __('Upload') }}
-                        </button>
-                    </form>
-                @endcan
-            </div>
-
             {{-- Comentarios --}}
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
                 <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ __('Comments') }}</h2>
@@ -165,6 +132,45 @@
                     </form>
                 @endcan
             </div>
+
+            {{-- Adjuntos --}}
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
+                <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ __('Attachments') }}</h2>
+                <ul class="space-y-2 mb-4">
+                    @forelse ($ticket->attachments as $attachment)
+                        <li class="flex items-center justify-between gap-2 text-sm border border-gray-100 rounded-lg p-3">
+                            <div class="min-w-0">
+                                <a href="{{ route('admin.tickets.attachments.download', [$ticket, $attachment]) }}" class="font-medium text-brand-blue hover:underline truncate block">{{ $attachment->original_name }}</a>
+                                <div class="text-xs text-gray-400">
+                                    {{ number_format($attachment->size / 1024, 0) }} KB &middot;
+                                    {{ __('uploaded by') }} {{ $attachment->uploader?->name ?? __('Unknown') }} &middot;
+                                    {{ $attachment->created_at->format('d/m/Y H:i') }}
+                                </div>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="text-sm text-gray-400">{{ __('No attachments yet.') }}</li>
+                    @endforelse
+                </ul>
+                @can('attach', $ticket)
+                    <form wire:submit="uploadAttachments" class="space-y-2">
+                        <div class="flex items-center gap-3">
+                            <label for="ticketNewAttachmentsInput"
+                                class="inline-flex items-center gap-2 bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-md cursor-pointer hover:bg-gray-200 transition shrink-0">
+                                {{ __('Choose files') }}
+                            </label>
+                            <span class="text-xs text-gray-400">{{ $newAttachments ? __(':count file(s) selected', ['count' => count($newAttachments)]) : __('No files chosen') }}</span>
+                        </div>
+                        <input type="file" id="ticketNewAttachmentsInput" wire:model="newAttachments" multiple class="sr-only">
+                        @error('newAttachments') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
+                        @error('newAttachments.*') <p class="text-xs text-brand-red">{{ $message }}</p> @enderror
+                        <div wire:loading wire:target="newAttachments" class="text-xs text-gray-400">{{ __('Uploading…') }}</div>
+                        <button type="submit" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-brand-blue-600 transition">
+                            {{ __('Upload') }}
+                        </button>
+                    </form>
+                @endcan
+            </div>
         </div>
 
         {{-- Panel lateral: acciones --}}
@@ -173,16 +179,16 @@
                 <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ __('Status') }}</h2>
                 @can('changeStatus', $ticket)
                     <select wire:change="updateStatus($event.target.value)" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                        @foreach (['open' => __('Open'), 'in_progress' => __('In progress'), 'resolved' => __('Resolved'), 'closed' => __('Closed')] as $value => $label)
-                            <option value="{{ $value }}" @selected($ticket->status === $value)>{{ $label }}</option>
+                        @foreach (\App\Models\Ticket::STATUSES as $value => $label)
+                            <option value="{{ $value }}" @selected($ticket->status === $value)>{{ __($label) }}</option>
                         @endforeach
                     </select>
                 @else
-                    <p class="text-sm text-gray-700 font-medium capitalize">{{ str_replace('_', ' ', $ticket->status) }}</p>
+                    <p class="text-sm text-gray-700 font-medium">{{ \App\Models\Ticket::statusLabel($ticket->status) }}</p>
                 @endcan
 
                 <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mt-4 mb-1">{{ __('Priority') }}</h2>
-                <p class="text-sm text-gray-700 font-medium capitalize">{{ $ticket->priority }}</p>
+                <p class="text-sm text-gray-700 font-medium">{{ \App\Models\Ticket::priorityLabel($ticket->priority) }}</p>
             </div>
 
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
@@ -226,7 +232,7 @@
                 <form wire:submit="saveFields" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         @foreach ($ticket->issue->fieldDefinitions as $field)
-                            <div class="{{ in_array($field->field_type, ['textarea', 'checkbox', 'pick_n']) ? 'sm:col-span-2' : '' }}">
+                            <div class="{{ in_array($field->field_type, ['textarea', 'checkbox', 'pick_n']) || $field->key === 'method_of_verification_details' ? 'sm:col-span-2' : '' }}">
                                 <label class="block text-sm font-medium text-gray-600 mb-1">
                                     {{ $field->label }}
                                     @if ($field->is_required) <span class="text-brand-red">*</span> @endif
@@ -256,11 +262,11 @@
                                         @break
 
                                     @case('radio')
-                                        <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1.5">
+                                        <div class="flex flex-wrap gap-2 pt-1">
                                             @foreach ($field->options as $option)
-                                                <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold">
                                                     <input type="radio" wire:model="fieldValuesForm.{{ $field->id }}" value="{{ $option->value }}"
-                                                        class="text-brand-blue focus:ring-brand-blue">
+                                                        class="text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
                                                     {{ $option->value }}
                                                 </label>
                                             @endforeach
@@ -269,11 +275,11 @@
 
                                     @case('checkbox')
                                     @case('pick_n')
-                                        <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1.5">
+                                        <div class="flex flex-wrap gap-2 pt-1">
                                             @foreach ($field->options as $option)
-                                                <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                                <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold">
                                                     <input type="checkbox" wire:model.live="fieldValuesForm.{{ $field->id }}" value="{{ $option->value }}"
-                                                        class="rounded text-brand-blue focus:ring-brand-blue">
+                                                        class="rounded text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
                                                     {{ $option->value }}
                                                 </label>
                                             @endforeach

@@ -92,7 +92,7 @@ class TicketEventNotification extends Notification
      * Lunex_Ticket_System_Discovery_MVP.docx sección 4 — "crítica de
      * preservar"): [[GRUPO]] ISSUE / CÓDIGO / TELÉFONO / #TICKET. Sirve
      * como identificador de hilo: la creación lo manda "limpio", cualquier
-     * evento posterior lo reenvía con "Re:", y al pasar a Resolved/Closed
+     * evento posterior lo reenvía con "Re:", y al pasar a Resolved
      * se antepone "done --" igual que hacía el equipo a mano.
      */
     protected function subject(): string
@@ -104,7 +104,7 @@ class TicketEventNotification extends Notification
         }
 
         if ($this->event === self::EVENT_STATUS_CHANGED
-            && in_array($this->payload['to'] ?? null, [Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED], true)) {
+            && ($this->payload['to'] ?? null) === Ticket::STATUS_RESOLVED) {
             return "done -- Re: {$base}";
         }
 
@@ -235,10 +235,11 @@ class TicketEventNotification extends Notification
     public static function statusLabel(string $status): string
     {
         return match ($status) {
-            Ticket::STATUS_OPEN => 'Open',
-            Ticket::STATUS_IN_PROGRESS => 'In progress',
+            Ticket::STATUS_NEW => 'New case',
+            Ticket::STATUS_PROCESSING => 'Processing',
+            Ticket::STATUS_FOLLOW_UP => 'Follow up',
             Ticket::STATUS_RESOLVED => 'Resolved',
-            Ticket::STATUS_CLOSED => 'Closed',
+            Ticket::STATUS_INFORMATIONAL => 'Informational',
             default => $status,
         };
     }

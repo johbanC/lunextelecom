@@ -11,13 +11,44 @@ class Ticket extends Model
 {
     use HasFactory;
 
-    public const STATUS_OPEN = 'open';
+    public const STATUS_NEW = 'new';
 
-    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_PROCESSING = 'processing';
+
+    public const STATUS_FOLLOW_UP = 'follow_up';
 
     public const STATUS_RESOLVED = 'resolved';
 
-    public const STATUS_CLOSED = 'closed';
+    public const STATUS_INFORMATIONAL = 'informational';
+
+    public const STATUSES = [
+        self::STATUS_NEW => 'New case',
+        self::STATUS_PROCESSING => 'Processing',
+        self::STATUS_FOLLOW_UP => 'Follow up',
+        self::STATUS_RESOLVED => 'Resolved',
+        self::STATUS_INFORMATIONAL => 'Informational',
+    ];
+
+    public const PRIORITIES = [
+        'low' => 'Low',
+        'normal' => 'Normal',
+        'high' => 'High',
+        'urgent' => 'Urgent',
+    ];
+
+    /**
+     * Etiqueta traducible para un status — centraliza el mapeo que antes
+     * estaba duplicado (y sin traducir) en varias vistas.
+     */
+    public static function statusLabel(string $status): string
+    {
+        return __(self::STATUSES[$status] ?? $status);
+    }
+
+    public static function priorityLabel(string $priority): string
+    {
+        return __(self::PRIORITIES[$priority] ?? $priority);
+    }
 
     protected $fillable = [
         'ticket_number',
@@ -26,6 +57,8 @@ class Ticket extends Model
         'issue_id',
         'header',
         'status',
+        'is_draft',
+        'is_demo',
         'priority',
         'related_to_group_id',
         'assignee_id',
@@ -39,6 +72,8 @@ class Ticket extends Model
 
     protected $casts = [
         'header' => 'array',
+        'is_draft' => 'boolean',
+        'is_demo' => 'boolean',
         'sla_status_since' => 'datetime',
         'sla_warning_notified_at' => 'datetime',
         'sla_breached_notified_at' => 'datetime',
@@ -49,10 +84,27 @@ class Ticket extends Model
     protected static function booted(): void
     {
         static::creating(function (Ticket $ticket) {
-            if (empty($ticket->ticket_number)) {
+            if (empty($ticket->ticket_number) && ! $ticket->is_draft) {
                 $ticket->ticket_number = static::generateTicketNumber($ticket->ticket_type_id);
             }
         });
+    }
+
+    /**
+     * Convierte un borrador en un ticket real: le asigna número correlativo
+     * y arranca el semáforo de SLA desde ahora (no desde que se guardó el
+     * borrador, cuando todavía no era un caso accionable).
+     */
+    public function publish(): void
+    {
+        if (! $this->is_draft) {
+            return;
+        }
+
+        $this->ticket_number = static::generateTicketNumber($this->ticket_type_id);
+        $this->is_draft = false;
+        $this->sla_status_since = now();
+        $this->save();
     }
 
     /**
@@ -106,7 +158,7 @@ class Ticket extends Model
      */
     public function slaStatus(): string
     {
-        if (in_array($this->status, [self::STATUS_RESOLVED, self::STATUS_CLOSED], true)) {
+        if ($this->status === self::STATUS_RESOLVED) {
             return 'done';
         }
 

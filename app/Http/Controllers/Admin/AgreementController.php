@@ -18,10 +18,11 @@ class AgreementController extends Controller
         $status = $request->query('status', 'all');
 
         $agreements = Agreement::query()
-            ->with('creator')
+            ->with(['creator', 'manager'])
             ->when($status === 'pending', fn ($q) => $q->pending())
             ->when($status === 'expired', fn ($q) => $q->expired())
             ->when($status === 'signed', fn ($q) => $q->signed())
+            ->when($status === 'to_manage', fn ($q) => $q->toManage())
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -31,6 +32,7 @@ class AgreementController extends Controller
             'pending' => Agreement::pending()->count(),
             'expired' => Agreement::expired()->count(),
             'signed' => Agreement::signed()->count(),
+            'to_manage' => Agreement::toManage()->count(),
         ];
 
         return view('admin.agreements.index', compact('agreements', 'status', 'counts'));
@@ -76,10 +78,34 @@ class AgreementController extends Controller
      */
     public function show(Agreement $agreement)
     {
-        $agreement->load('creator');
+        $agreement->load(['creator', 'manager']);
         $expirationOptions = Agreement::expirationOptions();
 
         return view('admin.agreements.show', compact('agreement', 'expirationOptions'));
+    }
+
+    /**
+     * Enlaza un documento firmado a un número de ticket y lo marca como
+     * gestionado (ya enviado al área encargada) — así el siguiente turno
+     * sabe qué firmados todavía están pendientes por gestionar.
+     */
+    public function manage(Request $request, Agreement $agreement)
+    {
+        abort_unless($agreement->isSigned(), 403, __('Only signed forms can be linked to a ticket.'));
+
+        $validated = $request->validate([
+            'ticket_number' => 'required|string|max:50',
+        ]);
+
+        $agreement->update([
+            'linked_ticket_number' => $validated['ticket_number'],
+            'managed_by' => $request->user()->id,
+            'managed_at' => now(),
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('status', __('Marked as managed — linked to ticket :number.', ['number' => $validated['ticket_number']]));
     }
 
     /**

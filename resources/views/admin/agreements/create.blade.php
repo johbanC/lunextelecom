@@ -21,13 +21,13 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1.5">{{ __('Form type') }}</label>
                     <select name="type" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                        <option value="coam_equipment">GA COAM Equipment Inquiry</option>
+                        <option value="coam_equipment">{{ \App\Models\Agreement::typeLabel('coam_equipment') }}</option>
                     </select>
                     @error('type') <p class="text-brand-red text-sm mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Account ID</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">{{ __('Account ID') }}</label>
                     <input type="text" name="account_id" value="{{ old('account_id') }}" required
                         class="w-full h-11 border border-gray-300 rounded-lg px-3 uppercase focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition"
                         oninput="this.value = this.value.toUpperCase()">

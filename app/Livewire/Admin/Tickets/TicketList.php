@@ -72,7 +72,7 @@ class TicketList extends Component
 
         return response()->streamDownload(function () use ($tickets) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Ticket', 'Type', 'Category', 'Issue', 'Status', 'Priority', 'SLA', 'Related to', 'Assignee', 'Header', 'Created'], ',', '"', '\\');
+            fputcsv($out, [__('Ticket'), __('Type'), __('Category'), __('Issue'), __('Status'), __('Priority'), __('SLA'), __('Related to'), __('Assignee'), __('Header'), __('Created')], ',', '"', '\\');
 
             foreach ($tickets as $ticket) {
                 fputcsv($out, [
@@ -106,6 +106,7 @@ class TicketList extends Component
         $user = Auth::user();
 
         return Ticket::query()
+            ->where('is_draft', false)
             ->when(! $user->can('tickets.view.all'), function ($query) use ($user) {
                 $query->where(function ($scope) use ($user) {
                     $scope->whereRaw('1 = 0');
@@ -132,12 +133,12 @@ class TicketList extends Component
                 $query->select('tickets.*')->join('categories', 'categories.id', '=', 'tickets.category_id');
 
                 if ($this->slaFilter === 'done') {
-                    $query->whereIn('tickets.status', [Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED]);
+                    $query->where('tickets.status', Ticket::STATUS_RESOLVED);
 
                     return;
                 }
 
-                $query->whereNotIn('tickets.status', [Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED]);
+                $query->where('tickets.status', '!=', Ticket::STATUS_RESOLVED);
                 $elapsedDays = 'TIMESTAMPDIFF(DAY, tickets.sla_status_since, NOW())';
 
                 match ($this->slaFilter) {
@@ -157,8 +158,13 @@ class TicketList extends Component
             ->latest('tickets.created_at')
             ->paginate(15);
 
+        $unreadByTicket = Auth::user()->unreadNotifications
+            ->groupBy(fn ($notification) => $notification->data['ticket_id'] ?? null)
+            ->map->count();
+
         return view('livewire.admin.tickets.ticket-list', [
             'tickets' => $tickets,
+            'unreadByTicket' => $unreadByTicket,
             'categories' => Category::orderBy('name')->get(),
             'issues' => $this->categoryFilter
                 ? Issue::where('category_id', $this->categoryFilter)->orderBy('name')->get()

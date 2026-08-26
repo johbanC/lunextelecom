@@ -96,6 +96,7 @@
                 @endcan
                 @can('create', \App\Models\Ticket::class)
                     <a href="{{ route('admin.tickets.create') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.create') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('New ticket') }}</a>
+                    <a href="{{ route('admin.tickets.drafts.index') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.drafts.*') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('Drafts') }}</a>
                 @endcan
                 @can('catalog.manage')
                     <a href="{{ route('admin.tickets.catalog') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.catalog') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('Catalog') }}</a>
@@ -103,6 +104,11 @@
                 @can('notification_rules.manage')
                     <a href="{{ route('admin.tickets.notification-rules') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.notification-rules') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('Notification rules') }}</a>
                 @endcan
+                @if (\App\Livewire\Admin\Tickets\DemoDataGenerator::allowed())
+                    @can('catalog.manage')
+                        <a href="{{ route('admin.tickets.demo') }}" class="px-3 py-1.5 rounded-lg font-medium transition {{ request()->routeIs('admin.tickets.demo') ? 'text-brand-blue-700 bg-brand-blue-50' : 'text-gray-500 hover:text-gray-700' }}">{{ __('Demo data') }}</a>
+                    @endcan
+                @endif
             </div>
         </div>
     @endif

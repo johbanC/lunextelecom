@@ -47,7 +47,7 @@ class ReportsDashboard extends Component
 
         return response()->streamDownload(function () use ($tickets) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Ticket', 'Type', 'Category', 'Issue', 'Status', 'Priority', 'SLA', 'Related to', 'Assignee', 'Created', 'Resolved'], ',', '"', '\\');
+            fputcsv($out, [__('Ticket'), __('Type'), __('Category'), __('Issue'), __('Status'), __('Priority'), __('SLA'), __('Related to'), __('Assignee'), __('Created'), __('Resolved')], ',', '"', '\\');
 
             foreach ($tickets as $ticket) {
                 fputcsv($out, [
@@ -77,6 +77,7 @@ class ReportsDashboard extends Component
         $user = Auth::user();
 
         return Ticket::query()
+            ->where('is_draft', false)
             ->when(! $user->can('reports.view.all'), function ($query) use ($user) {
                 $query->whereIn('tickets.related_to_group_id', $user->groups()->pluck('groups.id'));
             })
@@ -100,7 +101,7 @@ class ReportsDashboard extends Component
             ->join('categories', 'categories.id', '=', 'tickets.category_id')
             ->get()
             ->countBy(function ($row) {
-                if (in_array($row->status, [Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED], true)) {
+                if ($row->status === Ticket::STATUS_RESOLVED) {
                     return 'done';
                 }
                 if ($row->elapsed >= $row->sla_red_days) {

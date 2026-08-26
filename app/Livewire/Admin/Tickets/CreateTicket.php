@@ -37,7 +37,7 @@ class CreateTicket extends Component
 
     public string $priority = 'normal';
 
-    public string $status = Ticket::STATUS_OPEN;
+    public string $status = Ticket::STATUS_NEW;
 
     public ?int $relatedToGroupId = null;
 
@@ -49,11 +49,39 @@ class CreateTicket extends Component
     /** @var array<int, TemporaryUploadedFile> */
     public array $newAttachments = [];
 
-    public function mount(): void
+    public ?Ticket $editingDraft = null;
+
+    public function mount(?Ticket $draft = null): void
     {
         $this->authorize('create', Ticket::class);
 
-        $this->resetHeader();
+        if (! $draft) {
+            $this->resetHeader();
+
+            return;
+        }
+
+        abort_unless($draft->is_draft, 404);
+        $this->authorize('view', $draft);
+
+        $this->editingDraft = $draft;
+        $this->ticketTypeCode = $draft->ticketType->code;
+        $this->categoryId = $draft->category_id;
+        $this->issueId = $draft->issue_id;
+        $this->priority = $draft->priority;
+        $this->status = $draft->status;
+        $this->relatedToGroupId = $draft->related_to_group_id;
+        $this->assigneeId = $draft->assignee_id;
+        $this->resetHeader($draft->header ?? []);
+
+        foreach ($draft->fieldValues()->with('fieldDefinition')->get() as $fieldValue) {
+            $this->fieldValues[$fieldValue->field_definition_id] = $fieldValue->decodedValue() ?? ($fieldValue->fieldDefinition?->isMultiValue() ? [] : '');
+        }
+
+        $this->extraCustomers = $draft->extraCustomers
+            ->map(fn ($extra) => ['full_name' => $extra->full_name, 'phone' => $extra->phone])
+            ->values()
+            ->all();
     }
 
     public function selectType(string $code): void
@@ -110,11 +138,16 @@ class CreateTicket extends Component
         $this->extraCustomers = array_values($this->extraCustomers);
     }
 
-    protected function resetHeader(): void
+    /**
+     * @param  array<string, mixed>  $existing  Valores a conservar (al reanudar un borrador).
+     */
+    protected function resetHeader(array $existing = []): void
     {
-        $this->header = $this->ticketTypeCode === TicketType::RETAILER
-            ? array_fill_keys(['retailer_code', 'sku'], '')
-            : array_fill_keys(['phone', 'sku', 'full_name', 'city', 'state', 'tx_id'], '');
+        $keys = $this->ticketTypeCode === TicketType::RETAILER
+            ? ['retailer_code', 'sku']
+            : ['phone', 'sku', 'full_name', 'city', 'state', 'tx_id'];
+
+        $this->header = array_merge(array_fill_keys($keys, ''), array_intersect_key($existing, array_flip($keys)));
     }
 
     protected function currentIssue(): ?Issue
@@ -131,7 +164,7 @@ class CreateTicket extends Component
             'categoryId' => ['required', 'exists:categories,id'],
             'issueId' => ['required', 'exists:issues,id'],
             'priority' => ['required', 'in:low,normal,high,urgent'],
-            'status' => ['required', 'in:open,in_progress,resolved,closed'],
+            'status' => ['required', 'in:new,processing,follow_up,resolved,informational'],
             'relatedToGroupId' => ['nullable', 'exists:groups,id'],
             'assigneeId' => ['nullable', 'exists:users,id'],
         ];
@@ -160,11 +193,67 @@ class CreateTicket extends Component
         return $rules;
     }
 
+    /**
+     * Guarda datos incompletos como borrador: solo Category/Issue son
+     * obligatorios (para saber qué campos dinámicos aplican), el resto
+     * queda pendiente hasta que se publique. Visible solo para quien lo
+     * creó (y para Admin/Director) — ver TicketPolicy::view().
+     */
+    public function saveDraft(): void
+    {
+        $this->authorize('create', Ticket::class);
+
+        $this->validate([
+            'categoryId' => ['required', 'exists:categories,id'],
+            'issueId' => ['required', 'exists:issues,id'],
+        ]);
+
+        if (filled($this->header['retailer_code'] ?? null)) {
+            $this->header['retailer_code'] = strtoupper($this->header['retailer_code']);
+        }
+
+        $ticketType = TicketType::where('code', $this->ticketTypeCode)->firstOrFail();
+        $issue = $this->currentIssue();
+
+        $attributes = [
+            'ticket_type_id' => $ticketType->id,
+            'category_id' => $this->categoryId,
+            'issue_id' => $this->issueId,
+            'header' => $this->header,
+            'status' => $this->status,
+            'is_draft' => true,
+            'priority' => $this->priority,
+            'related_to_group_id' => $this->relatedToGroupId,
+            'assignee_id' => $this->assigneeId,
+        ];
+
+        $ticket = DB::transaction(function () use ($attributes, $issue) {
+            $ticket = $this->editingDraft
+                ? tap($this->editingDraft)->update($attributes)
+                : Ticket::create($attributes + ['created_by' => Auth::id(), 'sla_status_since' => now()]);
+
+            $this->syncFieldValues($ticket, $issue);
+            $this->syncExtraCustomers($ticket);
+
+            return $ticket;
+        });
+
+        $this->syncAttachments($ticket);
+
+        session()->flash('status', __('Draft saved. Only you (and Admin/Director) can see it until you finish and create the ticket.'));
+
+        $this->redirectRoute('admin.tickets.drafts.edit', $ticket, navigate: true);
+    }
+
     public function save(): void
     {
         $this->authorize('create', Ticket::class);
 
         $this->validate();
+
+        if (filled($this->header['retailer_code'] ?? null)) {
+            $this->header['retailer_code'] = strtoupper($this->header['retailer_code']);
+        }
 
         $issue = $this->currentIssue();
 
@@ -185,37 +274,28 @@ class CreateTicket extends Component
             Retailer::firstOrCreate(['code' => $this->header['retailer_code']]);
         }
 
-        $ticket = DB::transaction(function () use ($issue, $ticketType) {
-            $ticket = Ticket::create([
-                'ticket_type_id' => $ticketType->id,
-                'category_id' => $this->categoryId,
-                'issue_id' => $this->issueId,
-                'header' => $this->header,
-                'status' => $this->status,
-                'priority' => $this->priority,
-                'related_to_group_id' => $this->relatedToGroupId,
-                'assignee_id' => $this->assigneeId,
-                'created_by' => Auth::id(),
-                'sla_status_since' => now(),
-            ]);
+        $attributes = [
+            'ticket_type_id' => $ticketType->id,
+            'category_id' => $this->categoryId,
+            'issue_id' => $this->issueId,
+            'header' => $this->header,
+            'status' => $this->status,
+            'priority' => $this->priority,
+            'related_to_group_id' => $this->relatedToGroupId,
+            'assignee_id' => $this->assigneeId,
+        ];
 
-            foreach ($issue->fieldDefinitions as $field) {
-                $value = $this->fieldValues[$field->id] ?? null;
-                if ($value === null || $value === '' || $value === []) {
-                    continue;
-                }
-
-                $ticket->fieldValues()->create([
-                    'field_definition_id' => $field->id,
-                    'value' => $field->isMultiValue() ? json_encode(array_values($value)) : $value,
-                ]);
+        $ticket = DB::transaction(function () use ($attributes, $issue) {
+            if ($this->editingDraft) {
+                $ticket = $this->editingDraft;
+                $ticket->update($attributes);
+                $ticket->publish();
+            } else {
+                $ticket = Ticket::create($attributes + ['created_by' => Auth::id(), 'sla_status_since' => now()]);
             }
 
-            foreach ($this->extraCustomers as $extra) {
-                if (! empty($extra['full_name'])) {
-                    $ticket->extraCustomers()->create($extra);
-                }
-            }
+            $this->syncFieldValues($ticket, $issue);
+            $this->syncExtraCustomers($ticket);
 
             $ticket->events()->create([
                 'user_id' => Auth::id(),
@@ -226,17 +306,7 @@ class CreateTicket extends Component
             return $ticket;
         });
 
-        foreach ($this->newAttachments as $file) {
-            $path = $file->store('attachments/'.$ticket->id, 'local');
-
-            $ticket->attachments()->create([
-                'uploaded_by' => Auth::id(),
-                'path' => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'mime_type' => $file->getMimeType(),
-                'size' => $file->getSize(),
-            ]);
-        }
+        $this->syncAttachments($ticket);
 
         TicketNotifier::notify(
             $ticket,
@@ -249,6 +319,51 @@ class CreateTicket extends Component
         session()->flash('status', __('Ticket :number created.', ['number' => $ticket->ticket_number]));
 
         $this->redirectRoute('admin.tickets.show', $ticket, navigate: true);
+    }
+
+    protected function syncFieldValues(Ticket $ticket, ?Issue $issue): void
+    {
+        $ticket->fieldValues()->delete();
+
+        foreach ($issue?->fieldDefinitions ?? [] as $field) {
+            $value = $this->fieldValues[$field->id] ?? null;
+            if ($value === null || $value === '' || $value === []) {
+                continue;
+            }
+
+            $ticket->fieldValues()->create([
+                'field_definition_id' => $field->id,
+                'value' => $field->isMultiValue() ? json_encode(array_values($value)) : $value,
+            ]);
+        }
+    }
+
+    protected function syncExtraCustomers(Ticket $ticket): void
+    {
+        $ticket->extraCustomers()->delete();
+
+        foreach ($this->extraCustomers as $extra) {
+            if (! empty($extra['full_name'])) {
+                $ticket->extraCustomers()->create($extra);
+            }
+        }
+    }
+
+    protected function syncAttachments(Ticket $ticket): void
+    {
+        foreach ($this->newAttachments as $file) {
+            $path = $file->store('attachments/'.$ticket->id, 'local');
+
+            $ticket->attachments()->create([
+                'uploaded_by' => Auth::id(),
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+        }
+
+        $this->newAttachments = [];
     }
 
     public function render(): View

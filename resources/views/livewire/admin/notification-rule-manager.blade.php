@@ -64,7 +64,11 @@
                         } }}</td>
                         <td class="p-4 text-gray-600">{{ $rule->category->name ?? __('All categories') }}</td>
                         <td class="p-4 text-gray-600">{{ $rule->group->name ?? '—' }}</td>
-                        <td class="p-4 text-gray-600 capitalize">{{ $rule->channel }}</td>
+                        <td class="p-4 text-gray-600">{{ match ($rule->channel) {
+                            'email' => __('Email only'),
+                            'platform' => __('In-platform only'),
+                            default => __('Email + in-platform'),
+                        } }}</td>
                         <td class="p-4">
                             <button wire:click="toggleActive({{ $rule->id }})" @class([
                                 'px-2.5 py-1 rounded-full text-xs font-bold',

@@ -48,7 +48,13 @@
                 @forelse ($groups as $group)
                     <tr class="{{ $group->is_active ? '' : 'opacity-50' }}">
                         <td class="p-4 font-medium text-gray-700">{{ $group->name }}</td>
-                        <td class="p-4 text-gray-600 capitalize">{{ $group->applies_to }}</td>
+                        <td class="p-4 text-gray-600">
+                            {{ match ($group->applies_to) {
+                                'retailer' => __('Retailer only'),
+                                'customer' => __('Customer only'),
+                                default => __('Retailer + Customer'),
+                            } }}
+                        </td>
                         <td class="p-4">
                             <button wire:click="manageMembers({{ $group->id }})" class="text-brand-blue text-xs font-semibold hover:underline">
                                 {{ trans_choice('{0} No members|{1} :count member|[2,*] :count members', $group->members_count, ['count' => $group->members_count]) }}

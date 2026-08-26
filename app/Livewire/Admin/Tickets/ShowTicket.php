@@ -37,13 +37,17 @@ class ShowTicket extends Component
         $this->authorize('view', $ticket);
 
         $this->ticket = $ticket;
+
+        Auth::user()->unreadNotifications
+            ->filter(fn ($notification) => ($notification->data['ticket_id'] ?? null) === $ticket->id)
+            ->each->markAsRead();
     }
 
     public function updateStatus(string $status): void
     {
         $this->authorize('changeStatus', $this->ticket);
 
-        if (! in_array($status, [Ticket::STATUS_OPEN, Ticket::STATUS_IN_PROGRESS, Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED], true)) {
+        if (! in_array($status, [Ticket::STATUS_NEW, Ticket::STATUS_PROCESSING, Ticket::STATUS_FOLLOW_UP, Ticket::STATUS_RESOLVED, Ticket::STATUS_INFORMATIONAL], true)) {
             return;
         }
 
@@ -58,7 +62,6 @@ class ShowTicket extends Component
             'sla_warning_notified_at' => null,
             'sla_breached_notified_at' => null,
             'resolved_at' => $status === Ticket::STATUS_RESOLVED ? now() : $this->ticket->resolved_at,
-            'closed_at' => $status === Ticket::STATUS_CLOSED ? now() : $this->ticket->closed_at,
         ]);
 
         $this->ticket->events()->create([

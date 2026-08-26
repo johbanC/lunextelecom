@@ -1,7 +1,16 @@
 <div>
+    @if ($editingDraft)
+        <div class="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-3 mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5 shrink-0">
+                <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" />
+            </svg>
+            <div>{{ __('You are editing a draft. Only you (and Admin/Director) can see it — nobody is notified until you create the ticket.') }}</div>
+        </div>
+    @endif
+
     <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
         <div>
-            <h1 class="text-xl font-bold text-gray-800">{{ __('New ticket') }}</h1>
+            <h1 class="text-xl font-bold text-gray-800">{{ $editingDraft ? __('Edit draft') : __('New ticket') }}</h1>
             <p class="text-sm text-gray-500">{{ __('The field set below depends on the selected Issue.') }}</p>
         </div>
         <div class="inline-flex p-1 rounded-full bg-gray-100 border border-gray-200">
@@ -22,10 +31,10 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 @foreach (array_keys($header) as $key)
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">{{ ucwords(str_replace('_', ' ', $key)) }}</label>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">{{ __(ucwords(str_replace('_', ' ', $key))) }}</label>
                         <input type="text" wire:model="header.{{ $key }}"
-                            @if ($key === 'retailer_code') list="retailer-codes-list" placeholder="{{ __('Lookup code from the other platform') }}" @endif
-                            class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                            @if ($key === 'retailer_code') list="retailer-codes-list" placeholder="{{ __('Lookup code from the other platform') }}" oninput="this.value = this.value.toUpperCase()" @endif
+                            class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition{{ $key === 'retailer_code' ? ' uppercase placeholder:normal-case' : '' }}">
                         @error("header.{$key}") <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
                     </div>
                 @endforeach
@@ -89,16 +98,16 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">{{ __('Priority') }} *</label>
                     <select wire:model="priority" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                        @foreach (['low' => __('Low'), 'normal' => __('Normal'), 'high' => __('High'), 'urgent' => __('Urgent')] as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
+                        @foreach (\App\Models\Ticket::PRIORITIES as $value => $label)
+                            <option value="{{ $value }}">{{ __($label) }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">{{ __('Status') }} *</label>
                     <select wire:model="status" class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
-                        @foreach (['open' => __('Open'), 'in_progress' => __('In progress'), 'resolved' => __('Resolved'), 'closed' => __('Closed')] as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
+                        @foreach (\App\Models\Ticket::STATUSES as $value => $label)
+                            <option value="{{ $value }}">{{ __($label) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -134,7 +143,7 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     @foreach ($selectedIssue->fieldDefinitions as $field)
-                        <div class="{{ in_array($field->field_type, ['textarea', 'checkbox', 'pick_n']) ? 'sm:col-span-2' : '' }}">
+                        <div class="{{ in_array($field->field_type, ['textarea', 'checkbox', 'pick_n']) || $field->key === 'method_of_verification_details' ? 'sm:col-span-2' : '' }}">
                             <label class="block text-sm font-medium text-gray-600 mb-1">
                                 {{ $field->label }}
                                 @if ($field->is_required) <span class="text-brand-red">*</span> @endif
@@ -164,11 +173,11 @@
                                     @break
 
                                 @case('radio')
-                                    <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1.5">
+                                    <div class="flex flex-wrap gap-2 pt-1">
                                         @foreach ($field->options as $option)
-                                            <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                            <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold">
                                                 <input type="radio" wire:model="fieldValues.{{ $field->id }}" value="{{ $option->value }}"
-                                                    class="text-brand-blue focus:ring-brand-blue">
+                                                    class="text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
                                                 {{ $option->value }}
                                             </label>
                                         @endforeach
@@ -177,11 +186,11 @@
 
                                 @case('checkbox')
                                 @case('pick_n')
-                                    <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1.5">
+                                    <div class="flex flex-wrap gap-2 pt-1">
                                         @foreach ($field->options as $option)
-                                            <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                                            <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600 cursor-pointer select-none transition hover:border-gray-300 has-[:checked]:border-brand-blue has-[:checked]:bg-brand-blue-50 has-[:checked]:text-brand-blue-700 has-[:checked]:font-semibold">
                                                 <input type="checkbox" wire:model.live="fieldValues.{{ $field->id }}" value="{{ $option->value }}"
-                                                    class="rounded text-brand-blue focus:ring-brand-blue">
+                                                    class="rounded text-brand-blue focus:ring-brand-blue focus:ring-offset-0">
                                                 {{ $option->value }}
                                             </label>
                                         @endforeach
@@ -203,8 +212,14 @@
         {{-- Adjuntos --}}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
             <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-4">{{ __('Attachments') }}</h2>
-            <input type="file" wire:model="newAttachments" multiple
-                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-600 file:text-xs file:font-semibold hover:file:bg-gray-200">
+            <div class="flex items-center gap-3">
+                <label for="newAttachmentsInput"
+                    class="inline-flex items-center gap-2 bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-md cursor-pointer hover:bg-gray-200 transition shrink-0">
+                    {{ __('Choose files') }}
+                </label>
+                <span class="text-xs text-gray-400">{{ $newAttachments ? __(':count file(s) selected', ['count' => count($newAttachments)]) : __('No files chosen') }}</span>
+            </div>
+            <input type="file" id="newAttachmentsInput" wire:model="newAttachments" multiple class="sr-only">
             @error('newAttachments') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
             @error('newAttachments.*') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
             <div wire:loading wire:target="newAttachments" class="text-xs text-gray-400 mt-1">{{ __('Uploading…') }}</div>
@@ -217,7 +232,13 @@
             @endif
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex justify-end items-center gap-3">
+            <button type="button" wire:click="saveDraft"
+                class="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 transition"
+                wire:loading.attr="disabled" wire:target="saveDraft">
+                <span wire:loading.remove wire:target="saveDraft">{{ __('Save as draft') }}</span>
+                <span wire:loading wire:target="saveDraft">{{ __('Saving…') }}</span>
+            </button>
             <button type="submit"
                 class="inline-flex items-center gap-2 bg-brand-blue text-white px-5 py-2.5 rounded-lg font-semibold text-sm shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition"
                 wire:loading.attr="disabled" wire:target="save">

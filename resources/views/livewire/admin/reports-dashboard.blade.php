@@ -33,7 +33,7 @@
                     <div><dt class="inline font-semibold text-emerald-700">{{ __('On time') }}:</dt> <dd class="inline text-gray-600">{{ __('well within the category\'s time limit.') }}</dd></div>
                     <div><dt class="inline font-semibold text-amber-700">{{ __('Due soon') }}:</dt> <dd class="inline text-gray-600">{{ __('approaching the limit.') }}</dd></div>
                     <div><dt class="inline font-semibold text-brand-red">{{ __('Overdue (red SLA)') }}:</dt> <dd class="inline text-gray-600">{{ __('past the limit and needs attention.') }}</dd></div>
-                    <div><dt class="inline font-semibold text-gray-700">{{ __('Done') }}:</dt> <dd class="inline text-gray-600">{{ __('resolved or closed — no longer counts against SLA.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Done') }}:</dt> <dd class="inline text-gray-600">{{ __('resolved — no longer counts against SLA.') }}</dd></div>
                 </dl>
             </div>
         </div>
@@ -50,8 +50,8 @@
         </div>
         <select wire:model.live="ticketTypeFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
             <option value="">{{ __('All types') }}</option>
-            <option value="retailer">Retailer</option>
-            <option value="customer">Customer</option>
+            <option value="retailer">{{ __('Retailer') }}</option>
+            <option value="customer">{{ __('Customer') }}</option>
         </select>
         <select wire:model.live="categoryFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
             <option value="">{{ __('All categories') }}</option>
@@ -91,10 +91,10 @@
         {{-- Por estado --}}
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
             <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-4">{{ __('By status') }}</h2>
-            @forelse (['open' => __('Open'), 'in_progress' => __('In progress'), 'resolved' => __('Resolved'), 'closed' => __('Closed')] as $key => $label)
+            @forelse (\App\Models\Ticket::STATUSES as $key => $label)
                 @php($count = $byStatus[$key] ?? 0)
                 <div class="flex items-center gap-3 mb-2.5 text-sm">
-                    <span class="w-24 shrink-0 text-gray-600">{{ $label }}</span>
+                    <span class="w-24 shrink-0 text-gray-600">{{ __($label) }}</span>
                     <div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
                         <div class="h-full bg-brand-blue rounded-full" style="width: {{ $total > 0 ? min(100, $count / $total * 100) : 0 }}%"></div>
                     </div>

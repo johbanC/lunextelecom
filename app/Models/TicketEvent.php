@@ -74,7 +74,7 @@ class TicketEvent extends Model
 
     protected function statusLabel(?string $status): string
     {
-        return $status ? __(ucwords(str_replace('_', ' ', $status))) : __('—');
+        return $status ? Ticket::statusLabel($status) : __('—');
     }
 
     protected function userLabel(?int $userId): string

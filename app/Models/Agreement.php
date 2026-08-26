@@ -33,6 +33,9 @@ class Agreement extends Model
         'signature_path',
         'signed_ip',
         'signed_at',
+        'linked_ticket_number',
+        'managed_by',
+        'managed_at',
     ];
 
     protected $casts = [
@@ -42,6 +45,7 @@ class Agreement extends Model
         'signed_at' => 'datetime',
         'items' => 'array',
         'total_amount' => 'decimal:2',
+        'managed_at' => 'datetime',
     ];
 
     /**
@@ -109,6 +113,11 @@ class Agreement extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'managed_by');
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending')
@@ -127,6 +136,15 @@ class Agreement extends Model
         return $query->where('status', 'signed');
     }
 
+    /**
+     * Firmados que todavía no se enlazaron a un ticket ni se reenviaron al
+     * área encargada — lo que un cambio de turno necesita ver de primero.
+     */
+    public function scopeToManage($query)
+    {
+        return $query->where('status', 'signed')->whereNull('managed_at');
+    }
+
     public function isSigned(): bool
     {
         return $this->status === 'signed';
@@ -135,6 +153,11 @@ class Agreement extends Model
     public function isExpired(): bool
     {
         return ! $this->isSigned() && $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    public function isManaged(): bool
+    {
+        return $this->managed_at !== null;
     }
 
     public function publicUrl(): string

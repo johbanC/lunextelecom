@@ -23,7 +23,8 @@ class CheckTicketSlas extends Command
     public function handle(): int
     {
         $tickets = Ticket::query()
-            ->whereNotIn('status', [Ticket::STATUS_RESOLVED, Ticket::STATUS_CLOSED])
+            ->where('is_draft', false)
+            ->where('status', '!=', Ticket::STATUS_RESOLVED)
             ->with('category')
             ->get();
 

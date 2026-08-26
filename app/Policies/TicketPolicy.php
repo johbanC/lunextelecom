@@ -22,6 +22,10 @@ class TicketPolicy
 
     public function view(User $user, Ticket $ticket): bool
     {
+        if ($ticket->is_draft) {
+            return $ticket->created_by === $user->id || $user->can('tickets.view.all');
+        }
+
         if ($user->can('tickets.view.all')) {
             return true;
         }

@@ -23,15 +23,16 @@
     <div class="flex flex-wrap items-end gap-3 mb-4">
         <select wire:model.live="ticketTypeFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
             <option value="">{{ __('All types') }}</option>
-            <option value="retailer">Retailer</option>
-            <option value="customer">Customer</option>
+            <option value="retailer">{{ __('Retailer') }}</option>
+            <option value="customer">{{ __('Customer') }}</option>
         </select>
         <select wire:model.live="statusFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
             <option value="">{{ __('All statuses') }}</option>
-            <option value="open">{{ __('Open') }}</option>
-            <option value="in_progress">{{ __('In progress') }}</option>
+            <option value="new">{{ __('New case') }}</option>
+            <option value="processing">{{ __('Processing') }}</option>
+            <option value="follow_up">{{ __('Follow up') }}</option>
             <option value="resolved">{{ __('Resolved') }}</option>
-            <option value="closed">{{ __('Closed') }}</option>
+            <option value="informational">{{ __('Informational') }}</option>
         </select>
         <select wire:model.live="categoryFilter" class="h-10 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
             <option value="">{{ __('All categories') }}</option>
@@ -95,7 +96,15 @@
                     <tr class="hover:bg-brand-blue-50/40 transition-colors cursor-pointer"
                         onclick="window.location='{{ route('admin.tickets.show', $ticket) }}'">
                         <td class="p-4">
-                            <div class="font-bold text-gray-800">{{ $ticket->ticket_number }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-gray-800">{{ $ticket->ticket_number }}</span>
+                                @if (($unreadByTicket[$ticket->id] ?? 0) > 0)
+                                    <span title="{{ __('Unread updates') }}"
+                                        class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-brand-red text-white text-[10px] font-bold">
+                                        {{ $unreadByTicket[$ticket->id] > 9 ? '9+' : $unreadByTicket[$ticket->id] }}
+                                    </span>
+                                @endif
+                            </div>
                             <div class="text-xs text-gray-400">{{ $ticket->headerTitle() ?? '—' }}</div>
                         </td>
                         <td class="p-4 text-gray-600">{{ $ticket->ticketType->name }}</td>
@@ -104,17 +113,17 @@
                             <div class="text-xs text-gray-400">{{ $ticket->issue->name }}</div>
                         </td>
                         <td class="p-4">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold capitalize">
-                                {{ str_replace('_', ' ', $ticket->status) }}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
+                                {{ \App\Models\Ticket::statusLabel($ticket->status) }}
                             </span>
                         </td>
                         <td class="p-4">
                             <span @class([
-                                'text-xs font-bold capitalize',
+                                'text-xs font-bold',
                                 'text-brand-red' => $ticket->priority === 'urgent',
                                 'text-amber-600' => $ticket->priority === 'high',
                                 'text-gray-500' => in_array($ticket->priority, ['normal', 'low'], true),
-                            ])>{{ $ticket->priority }}</span>
+                            ])>{{ \App\Models\Ticket::priorityLabel($ticket->priority) }}</span>
                         </td>
                         <td class="p-4">
                             <x-sla-chip :status="$ticket->slaStatus()" />

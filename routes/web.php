@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
         Route::post('agreements', [AgreementController::class, 'store'])->name('agreements.store');
         Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show');
         Route::post('agreements/{agreement}/extend', [AgreementController::class, 'extend'])->name('agreements.extend');
+        Route::post('agreements/{agreement}/manage', [AgreementController::class, 'manage'])->name('agreements.manage');
         Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'pdf'])->name('agreements.pdf');
 
         Route::prefix('tickets')->name('tickets.')->group(function () {
@@ -40,7 +41,24 @@ Route::middleware('auth')->group(function () {
             Route::get('notification-rules', function () {
                 return view('admin.tickets.notification-rules');
             })->name('notification-rules')->middleware('can:notification_rules.manage');
+            Route::get('drafts', function () {
+                return view('admin.tickets.drafts');
+            })->name('drafts.index')->middleware('can:create,'.Ticket::class);
+            Route::get('demo', function () {
+                abort_unless(\App\Livewire\Admin\Tickets\DemoDataGenerator::allowed(), 404);
+
+                return view('admin.tickets.demo');
+            })->name('demo')->middleware('can:catalog.manage');
+            Route::get('{ticket}/draft', function (Ticket $ticket) {
+                abort_unless($ticket->is_draft, 404);
+
+                return view('admin.tickets.edit-draft', ['ticket' => $ticket]);
+            })->name('drafts.edit')->middleware('can:view,ticket');
             Route::get('{ticket}', function (Ticket $ticket) {
+                if ($ticket->is_draft) {
+                    return redirect()->route('admin.tickets.drafts.edit', $ticket);
+                }
+
                 return view('admin.tickets.show', ['ticket' => $ticket]);
             })->name('show')->middleware('can:view,ticket');
 

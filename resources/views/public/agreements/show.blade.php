@@ -49,7 +49,7 @@
 
                 <div class="flex flex-wrap gap-3">
                     <div class="flex items-center gap-2 rounded-full bg-brand-blue-50 border border-brand-blue-100 pl-3 pr-4 py-1.5">
-                        <span class="text-xs font-bold uppercase tracking-wide text-brand-blue-700">Account ID</span>
+                        <span class="text-xs font-bold uppercase tracking-wide text-brand-blue-700">{{ __('Account ID') }}</span>
                         <span class="text-sm font-bold text-brand-blue">{{ $agreement->account_id }}</span>
                     </div>
                     <div class="flex items-center gap-2 rounded-full bg-gray-100 border border-gray-200 pl-3 pr-4 py-1.5">

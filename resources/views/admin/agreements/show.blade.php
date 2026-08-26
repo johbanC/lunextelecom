@@ -14,7 +14,7 @@
         <div class="flex items-start justify-between flex-wrap gap-4 p-6 border-b border-gray-100">
             <div>
                 <h1 class="text-xl font-bold text-gray-800">{{ \App\Models\Agreement::typeLabel($agreement->type) }}</h1>
-                <p class="text-sm text-gray-500 mt-1">Account ID: <span class="font-bold text-gray-700">{{ $agreement->account_id }}</span> &middot; {{ __('Date') }}: {{ $agreement->form_date->format('m/d/Y') }}</p>
+                <p class="text-sm text-gray-500 mt-1">{{ __('Account ID') }}: <span class="font-bold text-gray-700">{{ $agreement->account_id }}</span> &middot; {{ __('Date') }}: {{ $agreement->form_date->format('m/d/Y') }}</p>
                 <p class="text-xs text-gray-400 mt-1">{{ __('Created by :name on :date', ['name' => $agreement->creator?->name ?? '—', 'date' => $agreement->created_at->format('m/d/Y H:i')]) }}</p>
             </div>
             @if ($agreement->isSigned())
@@ -123,14 +123,49 @@
                     </div>
                 </div>
 
-                <a href="{{ route('admin.agreements.pdf', $agreement) }}"
-                    class="inline-flex items-center gap-2 bg-brand-blue text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                        <path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v10.638l3.96-4.158a.75.75 0 1 1 1.08 1.04l-5.25 5.5a.75.75 0 0 1-1.08 0l-5.25-5.5a.75.75 0 1 1 1.08-1.04l3.96 4.158V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd" />
-                        <path d="M3.5 15.75a.75.75 0 0 1 .75.75v1.5c0 .138.112.25.25.25h11a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 15.5 19.5h-11A1.75 1.75 0 0 1 2.75 18v-1.5a.75.75 0 0 1 .75-.75Z" />
-                    </svg>
-                    {{ __('Download PDF') }}
-                </a>
+                <div class="flex flex-wrap items-center gap-3">
+                    <a href="{{ route('admin.agreements.pdf', $agreement) }}"
+                        class="inline-flex items-center gap-2 bg-brand-blue text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                            <path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v10.638l3.96-4.158a.75.75 0 1 1 1.08 1.04l-5.25 5.5a.75.75 0 0 1-1.08 0l-5.25-5.5a.75.75 0 1 1 1.08-1.04l3.96 4.158V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd" />
+                            <path d="M3.5 15.75a.75.75 0 0 1 .75.75v1.5c0 .138.112.25.25.25h11a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 15.5 19.5h-11A1.75 1.75 0 0 1 2.75 18v-1.5a.75.75 0 0 1 .75-.75Z" />
+                        </svg>
+                        {{ __('Download PDF') }}
+                    </a>
+
+                    @if ($agreement->isManaged())
+                        <span title="{{ __('Linked by :name on :date', ['name' => $agreement->manager?->name ?? '—', 'date' => $agreement->managed_at->format('m/d/Y H:i')]) }}"
+                            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand-blue-50 text-brand-blue-700 text-sm font-bold">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" /></svg>
+                            {{ __('Managed — ticket :number', ['number' => $agreement->linked_ticket_number]) }}
+                        </span>
+                    @else
+                        <div x-data="{ open: false }">
+                            <button type="button" @click="open = true"
+                                class="inline-flex items-center gap-2 bg-brand-red/10 text-brand-red px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-brand-red/20 transition">
+                                {{ __('Manage') }}
+                            </button>
+                            <div x-show="open" x-cloak x-transition.opacity @click.self="open = false"
+                                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                                <div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6" @click.stop>
+                                    <h2 class="text-lg font-bold text-gray-800 mb-1">{{ __('Link to ticket') }}</h2>
+                                    <p class="text-sm text-gray-500 mb-4">{{ __('Account') }}: {{ $agreement->account_id }}</p>
+                                    <form method="POST" action="{{ route('admin.agreements.manage', $agreement) }}">
+                                        @csrf
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">{{ __('Ticket number') }}</label>
+                                        <input type="text" name="ticket_number" required autofocus placeholder="{{ __('e.g. R-00004') }}"
+                                            class="w-full h-11 border border-gray-300 rounded-lg px-3 bg-white text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                                        <p class="text-xs text-gray-400 mt-2">{{ __('This marks the signed document as managed — already sent to the responsible area.') }}</p>
+                                        <div class="flex justify-end gap-2 mt-5">
+                                            <button type="button" @click="open = false" class="px-4 py-2 rounded-lg font-semibold text-sm text-gray-600 hover:bg-gray-100 transition">{{ __('Cancel') }}</button>
+                                            <button type="submit" class="bg-brand-blue text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-brand-blue-600 transition">{{ __('Save') }}</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
             @endunless
         </div>
     </div>
