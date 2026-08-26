@@ -7,6 +7,7 @@ use App\Models\NotificationRule;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Notifications\TicketEventNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -15,6 +16,12 @@ use Throwable;
  * canal, combinando las NotificationRule administrables (por categoría →
  * grupo) con un aviso directo al asesor asignado y, al crear el ticket, a
  * todo el grupo "Related to" — docs/SPEC_DESARROLLO.md sección 8.1.
+ *
+ * Los avisos por correo de un mismo evento se mandan como UN solo email con
+ * todos los destinatarios en "To:" (no uno por persona), para que sea un
+ * mismo hilo — así "responder a todos" le llega a todo el grupo. Los avisos
+ * en plataforma (campana) sí van uno por usuario, porque cada quien necesita
+ * su propia notificación en su cuenta.
  */
 class TicketNotifier
 {
@@ -79,43 +86,73 @@ class TicketNotifier
             }
         }
 
+        /** @var array<int, User> $mailRecipients */
+        $mailRecipients = [];
+
         foreach ($recipients as $userId => $entry) {
             if ($actor && $actor->id === $userId) {
                 continue;
             }
 
-            $channels = array_keys(array_filter($entry['channels']));
-
-            if (empty($channels)) {
-                continue;
+            if (! empty($entry['channels']['database'])) {
+                $entry['user']->notify(new TicketEventNotification($ticket, $event, $actor, $payload, ['database']));
             }
 
-            $trackingToken = in_array('mail', $channels, true) ? (string) Str::uuid() : null;
-
-            $notification = new TicketEventNotification($ticket, $event, $actor, $payload, $channels, $trackingToken);
-
-            $emailLog = $trackingToken ? EmailLog::create([
-                'tracking_token' => $trackingToken,
-                'to_email' => $entry['user']->email,
-                'to_name' => $entry['user']->name,
-                'user_id' => $entry['user']->id,
-                'ticket_id' => $ticket->id,
-                'event' => $event,
-                'purpose' => TicketEventNotification::purposeLabel($event),
-                'subject' => $notification->subject(),
-                'body_html' => (string) $notification->toMail($entry['user'])->render(),
-                'status' => 'pending',
-            ]) : null;
-
-            try {
-                $entry['user']->notify($notification);
-
-                $emailLog?->update(['status' => 'sent', 'sent_at' => now()]);
-            } catch (Throwable $e) {
-                $emailLog?->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
-
-                report($e);
+            if (! empty($entry['channels']['mail'])) {
+                $mailRecipients[$userId] = $entry['user'];
             }
+        }
+
+        if (empty($mailRecipients)) {
+            return;
+        }
+
+        static::sendBatchedMail($ticket, $event, $actor, $payload, $mailRecipients);
+    }
+
+    /**
+     * Manda UN correo con todos los $recipients en "To:", en vez de uno por
+     * persona — así el hilo de respuestas ("responder a todos") le sigue
+     * llegando a todo el grupo, no solo a quien lo contestó primero.
+     *
+     * @param  array<int, User>  $recipients
+     */
+    protected static function sendBatchedMail(Ticket $ticket, string $event, ?User $actor, array $payload, array $recipients): void
+    {
+        $trackingToken = (string) Str::uuid();
+
+        $primary = reset($recipients);
+
+        $recipientLabel = count($recipients) > 1
+            ? ($ticket->relatedToGroup?->name ? "{$ticket->relatedToGroup->name} team" : 'team')
+            : $primary->name;
+
+        $notification = new TicketEventNotification($ticket, $event, $actor, $payload, ['mail'], $trackingToken, $recipientLabel);
+
+        $emailLog = EmailLog::create([
+            'tracking_token' => $trackingToken,
+            'to_email' => $primary->email,
+            'to_name' => $primary->name,
+            'all_recipients' => collect($recipients)->map(fn (User $u) => ['name' => $u->name, 'email' => $u->email])->values()->all(),
+            'user_id' => count($recipients) === 1 ? $primary->id : null,
+            'ticket_id' => $ticket->id,
+            'event' => $event,
+            'purpose' => TicketEventNotification::purposeLabel($event),
+            'subject' => $notification->subject(),
+            'body_html' => (string) $notification->toMail($primary)->render(),
+            'status' => 'pending',
+        ]);
+
+        $routes = collect($recipients)->mapWithKeys(fn (User $u) => [$u->email => $u->name])->all();
+
+        try {
+            Notification::route('mail', $routes)->notify($notification);
+
+            $emailLog->update(['status' => 'sent', 'sent_at' => now()]);
+        } catch (Throwable $e) {
+            $emailLog->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
+
+            report($e);
         }
     }
 }

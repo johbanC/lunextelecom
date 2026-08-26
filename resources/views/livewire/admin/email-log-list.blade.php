@@ -80,7 +80,12 @@
                     <tr class="hover:bg-brand-blue-50/40 transition-colors cursor-pointer" title="{{ $log->status === 'failed' ? $log->error_message : '' }}"
                         onclick="window.location='{{ route('admin.email-log.show', $log) }}'">
                         <td class="p-4">
-                            <div class="font-semibold text-gray-800">{{ $log->to_name ?? $log->user?->name ?? '—' }}</div>
+                            <div class="font-semibold text-gray-800">
+                                {{ $log->to_name ?? $log->user?->name ?? '—' }}
+                                @if (count($log->all_recipients ?? []) > 1)
+                                    <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold align-middle">{{ __('+:n more', ['n' => count($log->all_recipients) - 1]) }}</span>
+                                @endif
+                            </div>
                             <div class="text-xs text-gray-400">{{ $log->to_email }}</div>
                         </td>
                         <td class="p-4 text-gray-600">{{ __(\App\Notifications\TicketEventNotification::purposeLabel($log->event)) }}</td>

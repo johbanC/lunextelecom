@@ -11,6 +11,7 @@ class EmailLog extends Model
         'tracking_token',
         'to_email',
         'to_name',
+        'all_recipients',
         'user_id',
         'ticket_id',
         'agreement_id',
@@ -26,6 +27,7 @@ class EmailLog extends Model
     ];
 
     protected $casts = [
+        'all_recipients' => 'array',
         'sent_at' => 'datetime',
         'opened_at' => 'datetime',
     ];

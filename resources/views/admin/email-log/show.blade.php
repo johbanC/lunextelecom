@@ -45,9 +45,22 @@
             @endif
 
             <div>
-                <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">{{ __('Recipient') }}</div>
-                <div class="font-semibold text-gray-800">{{ $emailLog->to_name ?? $emailLog->user?->name ?? '—' }}</div>
-                <div class="text-sm text-gray-500">{{ $emailLog->to_email }}</div>
+                <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">
+                    {{ count($emailLog->all_recipients ?? []) > 1 ? __('Recipients (:n, same email)', ['n' => count($emailLog->all_recipients)]) : __('Recipient') }}
+                </div>
+                @if (count($emailLog->all_recipients ?? []) > 1)
+                    <ul class="space-y-1">
+                        @foreach ($emailLog->all_recipients as $recipient)
+                            <li>
+                                <div class="font-semibold text-gray-800">{{ $recipient['name'] ?? $recipient['email'] }}</div>
+                                <div class="text-sm text-gray-500">{{ $recipient['email'] }}</div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <div class="font-semibold text-gray-800">{{ $emailLog->to_name ?? $emailLog->user?->name ?? '—' }}</div>
+                    <div class="text-sm text-gray-500">{{ $emailLog->to_email }}</div>
+                @endif
             </div>
 
             <div>

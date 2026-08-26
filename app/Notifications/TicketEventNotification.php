@@ -48,6 +48,7 @@ class TicketEventNotification extends Notification
         public array $payload,
         public array $channels,
         public ?string $trackingToken = null,
+        public ?string $recipientLabel = null,
     ) {}
 
     /**
@@ -63,7 +64,7 @@ class TicketEventNotification extends Notification
         return (new MailMessage)
             ->subject($this->subject())
             ->view('emails.branded', [
-                'intro' => "Hi {$notifiable->name}, ".$this->line(),
+                'intro' => "Hi {$this->greetingName($notifiable)}, ".$this->line(),
                 'details' => $this->details(),
                 'note' => $this->note(),
                 'ctaLabel' => 'View ticket',
@@ -72,6 +73,17 @@ class TicketEventNotification extends Notification
                 'signatureRole' => $this->signatureRole(),
                 'trackingUrl' => $this->trackingToken ? route('email.tracking', $this->trackingToken) : null,
             ]);
+    }
+
+    /**
+     * Cuando el correo va a varias personas a la vez (mismo hilo, mismo
+     * mensaje con varios "To:"), $notifiable es un destinatario anónimo sin
+     * nombre real — se usa $recipientLabel (ej. "Accounting team") en su
+     * lugar. Para un envío a una sola persona, se usa su nombre normal.
+     */
+    protected function greetingName(object $notifiable): string
+    {
+        return $this->recipientLabel ?? $notifiable->name ?? 'there';
     }
 
     /**

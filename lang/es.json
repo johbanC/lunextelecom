@@ -1,6 +1,8 @@
 {
     "Admin Panel": "Panel de administración",
     "This platform always shows and saves Atlanta (Eastern) time, no matter where you connect from.": "Esta plataforma siempre muestra y guarda la hora de Atlanta (Eastern Time), sin importar desde dónde te conectes.",
+    "Recipients (:n, same email)": "Destinatarios (:n, mismo correo)",
+    "+:n more": "+:n más",
     "Only for team": "Solo para el equipo",
     "Any team": "Cualquier equipo",
     "Only for team (optional)": "Solo para el equipo (opcional)",
