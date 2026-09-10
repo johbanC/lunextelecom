@@ -9,17 +9,15 @@ use Illuminate\Support\Facades\Hash;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * La operación actual es solo Formularios + Usuarios. Los seeders del
+     * catálogo de tickets (TicketTypeSeeder, GroupSeeder, Retailer/Customer
+     * CatalogSeeder) siguen disponibles y se corren a mano si se reactiva
+     * el módulo de tickets:
+     *   php artisan db:seed --class=TicketTypeSeeder  (etc.)
      */
     public function run(): void
     {
-        $this->call([
-            RolesAndPermissionsSeeder::class,
-            TicketTypeSeeder::class,
-            GroupSeeder::class,
-            RetailerCatalogSeeder::class,
-            CustomerCatalogSeeder::class,
-        ]);
+        $this->call(RolesAndPermissionsSeeder::class);
 
         $admin = User::factory()->create([
             'name' => 'Admin Lunex',
@@ -28,25 +26,11 @@ class DatabaseSeeder extends Seeder
         ]);
         $admin->assignRole('Admin');
 
-        $director = User::factory()->create([
-            'name' => 'Director Lunex',
-            'email' => 'director@lunextelecom.local',
-            'password' => Hash::make('director123'),
+        $agente = User::factory()->create([
+            'name' => 'Agente Lunex',
+            'email' => 'agente@lunextelecom.local',
+            'password' => Hash::make('agente123'),
         ]);
-        $director->assignRole('Director/Administración');
-
-        $lider = User::factory()->create([
-            'name' => 'Líder de Equipo Lunex',
-            'email' => 'lider@lunextelecom.local',
-            'password' => Hash::make('lider123'),
-        ]);
-        $lider->assignRole('Líder de equipo');
-
-        $asesor = User::factory()->create([
-            'name' => 'Asesor Lunex',
-            'email' => 'asesor@lunextelecom.local',
-            'password' => Hash::make('asesor123'),
-        ]);
-        $asesor->assignRole('Asesor');
+        $agente->assignRole('Agente');
     }
 }

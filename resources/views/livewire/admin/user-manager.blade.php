@@ -23,13 +23,12 @@
                 </ol>
             </div>
             <div>
-                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Roles, from least to most access') }}</h3>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700 mb-2">{{ __('Roles') }}</h3>
                 <dl class="space-y-1.5 text-sm">
-                    <div><dt class="inline font-semibold text-gray-700">{{ __('Asesor') }}:</dt> <dd class="inline text-gray-600">{{ __('creates and works their own tickets.') }}</dd></div>
-                    <div><dt class="inline font-semibold text-gray-700">{{ __('Líder de equipo') }}:</dt> <dd class="inline text-gray-600">{{ __('the above, plus sees and reassigns their group\'s tickets and its reports.') }}</dd></div>
-                    <div><dt class="inline font-semibold text-gray-700">{{ __('Director/Administración') }}:</dt> <dd class="inline text-gray-600">{{ __('the above, plus every ticket, group and the full reports.') }}</dd></div>
-                    <div><dt class="inline font-semibold text-gray-700">{{ __('Admin') }}:</dt> <dd class="inline text-gray-600">{{ __('the above, plus manages the catalog, groups, users and notification rules.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Agente') }}:</dt> <dd class="inline text-gray-600">{{ __('works with forms — generates signing links, reviews the list, marks signed documents as handled.') }}</dd></div>
+                    <div><dt class="inline font-semibold text-gray-700">{{ __('Admin') }}:</dt> <dd class="inline text-gray-600">{{ __('the above, plus manages users, roles and permissions.') }}</dd></div>
                 </dl>
+                <p class="text-xs text-gray-500 mt-3">{{ __('Roles and their permissions are edited on the Roles screen.') }}</p>
             </div>
         </div>
     </x-how-it-works>

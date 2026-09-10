@@ -14,18 +14,22 @@
                     <img src="{{ asset('img/logo.png') }}" alt="Lunex Telecom" class="h-9 w-auto">
                 </a>
                 <div class="hidden sm:flex items-center gap-1.5">
-                    <a href="{{ route('admin.agreements.index') }}"
-                        class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
-                            {{ request()->routeIs('admin.agreements.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
-                        {{ __('Forms') }}
-                    </a>
-                    @can('viewAny', \App\Models\Ticket::class)
-                        <a href="{{ route('admin.tickets.index') }}"
+                    @can('agreements.view')
+                        <a href="{{ route('admin.agreements.index') }}"
                             class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
-                                {{ request()->routeIs('admin.tickets.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
-                            {{ __('Tickets') }}
+                                {{ request()->routeIs('admin.agreements.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                            {{ __('Forms') }}
                         </a>
                     @endcan
+                    @if (config('features.tickets'))
+                        @can('viewAny', \App\Models\Ticket::class)
+                            <a href="{{ route('admin.tickets.index') }}"
+                                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                    {{ request()->routeIs('admin.tickets.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                                {{ __('Tickets') }}
+                            </a>
+                        @endcan
+                    @endif
                     @can('users.manage')
                         <a href="{{ route('admin.users.index') }}"
                             class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
@@ -33,34 +37,47 @@
                             {{ __('Users') }}
                         </a>
                     @endcan
-                    @can('groups.manage')
-                        <a href="{{ route('admin.groups.index') }}"
+                    @can('roles.manage')
+                        <a href="{{ route('admin.roles.index') }}"
                             class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
-                                {{ request()->routeIs('admin.groups.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
-                            {{ __('Groups') }}
+                                {{ request()->routeIs('admin.roles.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                            {{ __('Roles') }}
                         </a>
                     @endcan
-                    @if (auth()->user()->can('reports.view.group') || auth()->user()->can('reports.view.all'))
+                    @if (config('features.groups'))
+                        @can('groups.manage')
+                            <a href="{{ route('admin.groups.index') }}"
+                                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                    {{ request()->routeIs('admin.groups.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                                {{ __('Groups') }}
+                            </a>
+                        @endcan
+                    @endif
+                    @if (config('features.reports') && (auth()->user()->can('reports.view.group') || auth()->user()->can('reports.view.all')))
                         <a href="{{ route('admin.reports.index') }}"
                             class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
                                 {{ request()->routeIs('admin.reports.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
                             {{ __('Reports') }}
                         </a>
                     @endif
-                    @can('email_log.view')
-                        <a href="{{ route('admin.email-log.index') }}"
-                            class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
-                                {{ request()->routeIs('admin.email-log.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
-                            {{ __('Emails') }}
-                        </a>
-                    @endcan
-                    @can('tickets.view.own')
-                        <a href="{{ route('admin.help.index') }}"
-                            class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
-                                {{ request()->routeIs('admin.help.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
-                            {{ __('Help') }}
-                        </a>
-                    @endcan
+                    @if (config('features.emails'))
+                        @can('email_log.view')
+                            <a href="{{ route('admin.email-log.index') }}"
+                                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                    {{ request()->routeIs('admin.email-log.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                                {{ __('Emails') }}
+                            </a>
+                        @endcan
+                    @endif
+                    @if (config('features.help'))
+                        @can('tickets.view.own')
+                            <a href="{{ route('admin.help.index') }}"
+                                class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
+                                    {{ request()->routeIs('admin.help.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                                {{ __('Help') }}
+                            </a>
+                        @endcan
+                    @endif
                 </div>
             </div>
             <div class="flex items-center gap-4 shrink-0">
@@ -81,15 +98,19 @@
 
                 <x-locale-switcher />
 
-                <livewire:admin.notification-bell />
+                @if (config('features.tickets') || config('features.emails'))
+                    <livewire:admin.notification-bell />
+                @endif
 
-                <a href="{{ route('admin.agreements.create') }}"
-                    class="inline-flex items-center gap-2 bg-brand-blue text-white pl-3 pr-4 py-2 rounded-lg font-semibold text-sm shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
-                        <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-                    </svg>
-                    <span class="hidden sm:inline">{{ __('Generate link') }}</span>
-                </a>
+                @can('agreements.create')
+                    <a href="{{ route('admin.agreements.create') }}"
+                        class="inline-flex items-center gap-2 bg-brand-blue text-white pl-3 pr-4 py-2 rounded-lg font-semibold text-sm shadow-sm shadow-brand-blue/30 hover:bg-brand-blue-600 active:bg-brand-blue-700 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4">
+                            <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                        </svg>
+                        <span class="hidden sm:inline">{{ __('Generate link') }}</span>
+                    </a>
+                @endcan
 
                 <div x-data="{ open: false }" class="relative">
                     <button @click="open = !open" @click.outside="open = false" type="button"
@@ -110,7 +131,7 @@
         </div>
     </nav>
 
-    @if (request()->routeIs('admin.tickets.*'))
+    @if (config('features.tickets') && request()->routeIs('admin.tickets.*'))
         <div class="bg-white border-b border-gray-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-1 py-2 text-sm">
                 @can('viewAny', \App\Models\Ticket::class)

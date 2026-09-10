@@ -26,15 +26,15 @@ Route::get('lang/{locale}', function (string $locale) {
 
 Route::middleware('auth')->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('agreements', [AgreementController::class, 'index'])->name('agreements.index');
-        Route::get('agreements/create', [AgreementController::class, 'create'])->name('agreements.create');
-        Route::post('agreements', [AgreementController::class, 'store'])->name('agreements.store');
-        Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show');
-        Route::post('agreements/{agreement}/extend', [AgreementController::class, 'extend'])->name('agreements.extend');
-        Route::post('agreements/{agreement}/manage', [AgreementController::class, 'manage'])->name('agreements.manage');
-        Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'pdf'])->name('agreements.pdf');
+        Route::get('agreements', [AgreementController::class, 'index'])->name('agreements.index')->middleware('can:viewAny,'.\App\Models\Agreement::class);
+        Route::get('agreements/create', [AgreementController::class, 'create'])->name('agreements.create')->middleware('can:create,'.\App\Models\Agreement::class);
+        Route::post('agreements', [AgreementController::class, 'store'])->name('agreements.store')->middleware('can:create,'.\App\Models\Agreement::class);
+        Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show')->middleware('can:view,agreement');
+        Route::post('agreements/{agreement}/extend', [AgreementController::class, 'extend'])->name('agreements.extend')->middleware('can:extend,agreement');
+        Route::post('agreements/{agreement}/manage', [AgreementController::class, 'manage'])->name('agreements.manage')->middleware('can:manage,agreement');
+        Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'pdf'])->name('agreements.pdf')->middleware('can:view,agreement');
 
-        Route::prefix('tickets')->name('tickets.')->group(function () {
+        Route::prefix('tickets')->name('tickets.')->middleware('feature:tickets')->group(function () {
             Route::get('/', function () {
                 return view('admin.tickets.index');
             })->name('index')->middleware('can:viewAny,'.Ticket::class);
@@ -79,23 +79,29 @@ Route::middleware('auth')->group(function () {
             return view('admin.users.index');
         })->name('users.index')->middleware('can:users.manage');
 
+        Route::get('roles', function () {
+            return view('admin.roles.index');
+        })->name('roles.index')->middleware('can:roles.manage');
+
         Route::get('groups', function () {
             return view('admin.groups.index');
-        })->name('groups.index')->middleware('can:groups.manage');
+        })->name('groups.index')->middleware(['feature:groups', 'can:groups.manage']);
 
         Route::get('reports', function () {
             return view('admin.reports.index');
-        })->name('reports.index');
+        })->name('reports.index')->middleware('feature:reports');
 
-        Route::get('email-log', function () {
-            return view('admin.email-log.index');
-        })->name('email-log.index')->middleware('can:email_log.view');
-        Route::get('email-log/{emailLog}', [EmailLogController::class, 'show'])->name('email-log.show')->middleware('can:email_log.view');
-        Route::post('email-log/{emailLog}/resend', [EmailLogController::class, 'resend'])->name('email-log.resend')->middleware('can:email_log.view');
+        Route::middleware('feature:emails')->group(function () {
+            Route::get('email-log', function () {
+                return view('admin.email-log.index');
+            })->name('email-log.index')->middleware('can:email_log.view');
+            Route::get('email-log/{emailLog}', [EmailLogController::class, 'show'])->name('email-log.show')->middleware('can:email_log.view');
+            Route::post('email-log/{emailLog}/resend', [EmailLogController::class, 'resend'])->name('email-log.resend')->middleware('can:email_log.view');
+        });
 
         Route::get('help', function () {
             return view('admin.help.index');
-        })->name('help.index')->middleware('can:tickets.view.own');
+        })->name('help.index')->middleware(['feature:help', 'can:tickets.view.own']);
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

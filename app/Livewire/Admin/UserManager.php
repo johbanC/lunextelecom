@@ -37,7 +37,7 @@ class UserManager extends Component
     {
         $this->authorize('users.manage');
 
-        $this->form = ['id' => null, 'name' => '', 'email' => '', 'password' => '', 'role' => 'Asesor'];
+        $this->form = ['id' => null, 'name' => '', 'email' => '', 'password' => '', 'role' => 'Agente'];
         $this->showForm = true;
     }
 
