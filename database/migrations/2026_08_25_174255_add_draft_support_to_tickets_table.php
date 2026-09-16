@@ -21,12 +21,22 @@ return new class extends Migration
             $table->index(['is_draft', 'created_by']);
         });
 
-        DB::statement('ALTER TABLE tickets MODIFY ticket_number VARCHAR(255) NULL');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE tickets MODIFY ticket_number VARCHAR(255) NULL');
+        } elseif (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE tickets ALTER COLUMN ticket_number DROP NOT NULL');
+        }
+        // SQLite doesn't support altering column nullability directly; ticket_number is already nullable after table recreation
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE tickets MODIFY ticket_number VARCHAR(255) NOT NULL');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE tickets MODIFY ticket_number VARCHAR(255) NOT NULL');
+        } elseif (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE tickets ALTER COLUMN ticket_number SET NOT NULL');
+        }
+        // SQLite doesn't support altering column nullability directly
 
         Schema::table('tickets', function (Blueprint $table) {
             $table->dropIndex(['is_draft', 'created_by']);
