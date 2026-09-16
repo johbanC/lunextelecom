@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AgreementController;
 use App\Http\Controllers\Admin\EmailLogController;
+use App\Http\Controllers\Admin\FormController;
 use App\Http\Controllers\EmailTrackingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAgreementController;
@@ -37,6 +38,12 @@ Route::middleware('auth')->group(function () {
         Route::get('form-templates', function () {
             return view('admin.form-templates.index');
         })->name('form-templates.index')->middleware('can:viewAny,'.\App\Models\FormTemplate::class);
+
+        Route::get('forms', [FormController::class, 'index'])->name('forms.index')->middleware('can:viewAny,'.\App\Models\FormSubmission::class);
+        Route::get('forms/create', [FormController::class, 'create'])->name('forms.create')->middleware('can:create,'.\App\Models\FormSubmission::class);
+        Route::post('forms', [FormController::class, 'store'])->name('forms.store')->middleware('can:create,'.\App\Models\FormSubmission::class);
+        Route::get('forms/{submission}', [FormController::class, 'show'])->name('forms.show')->middleware('can:view,submission');
+        Route::post('forms/{submission}/manage', [FormController::class, 'manage'])->name('forms.manage')->middleware('can:manage,submission');
 
         Route::prefix('tickets')->name('tickets.')->middleware('feature:tickets')->group(function () {
             Route::get('/', function () {
