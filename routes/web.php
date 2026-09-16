@@ -34,6 +34,10 @@ Route::middleware('auth')->group(function () {
         Route::post('agreements/{agreement}/manage', [AgreementController::class, 'manage'])->name('agreements.manage')->middleware('can:manage,agreement');
         Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'pdf'])->name('agreements.pdf')->middleware('can:view,agreement');
 
+        Route::get('form-templates', function () {
+            return view('admin.form-templates.index');
+        })->name('form-templates.index')->middleware('can:viewAny,'.\App\Models\FormTemplate::class);
+
         Route::prefix('tickets')->name('tickets.')->middleware('feature:tickets')->group(function () {
             Route::get('/', function () {
                 return view('admin.tickets.index');
