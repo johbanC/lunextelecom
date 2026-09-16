@@ -52,6 +52,43 @@ class PublicFormOnDemandTest extends TestCase
         $this->assertNotNull($submission->signature_path);
     }
 
+    public function test_required_non_editable_field_does_not_block_submission(): void
+    {
+        Notification::fake();
+
+        $agent = User::factory()->create();
+        $template = FormTemplate::create([
+            'name' => 'Retailer Login Issue',
+            'mode' => FormTemplate::MODE_ON_DEMAND,
+            'created_by' => $agent->id,
+        ]);
+        // Agent-prefilled, required, non-editable select field. It is rendered disabled in the
+        // browser, so it is never present in the submitted form data at all.
+        $lockedSelect = $template->fields()->create([
+            'label' => 'Account Type',
+            'field_type' => FormField::TYPE_SELECT,
+            'is_required' => true,
+            'editable_by_recipient' => false,
+        ]);
+        $editable = $template->fields()->create(['label' => 'Notes', 'field_type' => FormField::TYPE_TEXT]);
+
+        $submission = FormSubmission::create([
+            'uuid' => (string) Str::uuid(),
+            'form_template_id' => $template->id,
+            'status' => FormSubmission::STATUS_PENDING,
+            'created_by' => $agent->id,
+        ]);
+        $submission->values()->create(['form_field_id' => $lockedSelect->id, 'value' => 'Retailer']);
+
+        $response = $this->post(route('public.forms.store', $submission->uuid), [
+            'values' => [$editable->key => 'All good'],
+        ]);
+
+        $submission->refresh();
+        $response->assertRedirect(route('public.forms.thanks', $submission->uuid));
+        $this->assertTrue($submission->isSubmitted());
+    }
+
     public function test_expired_submission_rejects_new_submits(): void
     {
         $agent = User::factory()->create();

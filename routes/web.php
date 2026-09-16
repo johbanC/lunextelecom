@@ -128,13 +128,13 @@ Route::prefix('f')->name('public.')->group(function () {
 });
 
 // Public form submission routes
-Route::prefix('formularios')->name('public.forms.')->group(function () {
+Route::prefix('formularios')->name('public.forms.')->middleware('throttle:10,1')->group(function () {
     Route::get('{uuid}', [PublicFormController::class, 'show'])->name('show');
     Route::post('{uuid}', [PublicFormController::class, 'store'])->name('store');
     Route::get('{uuid}/gracias', [PublicFormController::class, 'thanks'])->name('thanks');
 });
 
-Route::prefix('p')->name('public.forms.standalone.')->group(function () {
+Route::prefix('p')->name('public.forms.standalone.')->middleware('throttle:10,1')->group(function () {
     Route::get('{slug}', [PublicFormController::class, 'showStandalone'])->name('show');
     Route::post('{slug}', [PublicFormController::class, 'storeStandalone'])->name('store');
 });

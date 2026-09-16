@@ -30,7 +30,9 @@ class PublicFormController extends Controller
         abort_if($submission->isSubmitted(), 403, __('This form has already been submitted.'));
         abort_if($submission->isExpired(), 403, __('The link to fill this form has expired.'));
 
-        $this->persistSubmission($request, $submission, $submission->template);
+        $validated = $this->validateSubmission($request, $submission->template);
+
+        $this->persistSubmission($validated, $request, $submission, $submission->template);
 
         FormNotifier::notifySubmitted($submission->fresh());
 
@@ -57,33 +59,57 @@ class PublicFormController extends Controller
         $template = FormTemplate::where('slug', $slug)->where('is_active', true)->where('mode', FormTemplate::MODE_STANDALONE)->firstOrFail();
         $template->load('fields');
 
+        // Standalone forms are filled out by the recipient from scratch (there's no agent
+        // pre-fill step for this mode), so every field is treated as editable regardless of
+        // its stored editable_by_recipient flag. Validate BEFORE creating the submission row
+        // so a failed submission doesn't leave behind an orphaned "pending" row.
+        $validated = $this->validateSubmission($request, $template, treatAllEditable: true);
+
         $submission = FormSubmission::create([
             'uuid' => (string) Str::uuid(),
             'form_template_id' => $template->id,
             'status' => FormSubmission::STATUS_PENDING,
         ]);
 
-        $this->persistSubmission($request, $submission, $template);
+        $this->persistSubmission($validated, $request, $submission, $template, treatAllEditable: true);
 
         FormNotifier::notifySubmitted($submission->fresh());
 
         return redirect()->route('public.forms.thanks', $submission->uuid);
     }
 
-    protected function persistSubmission(Request $request, FormSubmission $submission, FormTemplate $template): void
+    /**
+     * Build and run the validation rules for a template's fields.
+     *
+     * A field that is not editable_by_recipient is agent-prefilled and rendered as a disabled
+     * HTML control, which browsers never include in submitted form data — so it must not be
+     * required (or validated at all) from the recipient's submission. Standalone forms have no
+     * agent pre-fill step, so $treatAllEditable lets that flow validate every field.
+     */
+    protected function validateSubmission(Request $request, FormTemplate $template, bool $treatAllEditable = false): array
     {
         $rules = [];
         foreach ($template->fields as $field) {
+            if (! $treatAllEditable && ! $field->editable_by_recipient) {
+                continue;
+            }
+
             $rules["values.{$field->key}"] = ($field->is_required ? 'required' : 'nullable').($field->isMultiValue() ? '|array' : '|string|max:2000');
         }
         if ($template->requires_signature) {
-            $rules['signature'] = 'required|string|starts_with:data:image/png;base64,';
+            // max:500000 caps the base64-encoded signature string at ~500,000 characters
+            // (~500 KB), which comfortably covers a signature-pad PNG while preventing an
+            // unbounded payload from being written to disk on this unauthenticated endpoint.
+            $rules['signature'] = 'required|string|starts_with:data:image/png;base64,|max:500000';
         }
 
-        $validated = $request->validate($rules);
+        return $request->validate($rules);
+    }
 
+    protected function persistSubmission(array $validated, Request $request, FormSubmission $submission, FormTemplate $template, bool $treatAllEditable = false): void
+    {
         foreach ($template->fields as $field) {
-            if (! $field->editable_by_recipient) {
+            if (! $treatAllEditable && ! $field->editable_by_recipient) {
                 continue;
             }
 

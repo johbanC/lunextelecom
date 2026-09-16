@@ -113,7 +113,7 @@
 
                 <x-locale-switcher />
 
-                @if (config('features.tickets') || config('features.emails') || auth()->user()->can('forms.view'))
+                @if (config('features.tickets') || config('features.emails') || auth()->user()?->can('forms.view'))
                     <livewire:admin.notification-bell />
                 @endif
 

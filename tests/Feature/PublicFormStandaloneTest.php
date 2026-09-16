@@ -49,6 +49,48 @@ class PublicFormStandaloneTest extends TestCase
         Notification::assertSentTo($admin, \App\Notifications\FormSubmittedNotification::class);
     }
 
+    public function test_failed_standalone_submission_does_not_create_an_orphan_row(): void
+    {
+        $admin = User::factory()->create();
+        $template = FormTemplate::create([
+            'name' => 'Sign Up', 'mode' => FormTemplate::MODE_STANDALONE, 'slug' => 'sign-up-fail',
+            'is_active' => true, 'created_by' => $admin->id,
+        ]);
+        $template->fields()->create(['label' => 'Name', 'field_type' => FormField::TYPE_TEXT, 'is_required' => true]);
+
+        $response = $this->post(route('public.forms.standalone.store', 'sign-up-fail'), ['values' => []]);
+
+        $response->assertSessionHasErrors();
+        $this->assertEquals(0, FormSubmission::count());
+    }
+
+    public function test_standalone_submission_persists_a_field_flagged_non_editable(): void
+    {
+        Notification::fake();
+
+        $admin = User::factory()->create();
+        $template = FormTemplate::create([
+            'name' => 'Sign Up', 'mode' => FormTemplate::MODE_STANDALONE, 'slug' => 'sign-up-locked',
+            'is_active' => true, 'created_by' => $admin->id,
+        ]);
+        // Standalone templates have no agent pre-fill step, so editable_by_recipient being false
+        // here is stale/incorrect data — the recipient still fills this field in from scratch and
+        // its value must not be silently discarded.
+        $field = $template->fields()->create([
+            'label' => 'Name', 'field_type' => FormField::TYPE_TEXT, 'editable_by_recipient' => false,
+        ]);
+
+        $this->post(route('public.forms.standalone.store', 'sign-up-locked'), [
+            'values' => [$field->key => 'Katherine Castellanos'],
+        ]);
+
+        $submission = FormSubmission::firstOrFail();
+        $this->assertEquals(
+            'Katherine Castellanos',
+            $submission->values()->where('form_field_id', $field->id)->first()->value
+        );
+    }
+
     public function test_submitting_twice_creates_two_independent_submissions(): void
     {
         $admin = User::factory()->create();
