@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\FormController;
 use App\Http\Controllers\EmailTrackingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAgreementController;
+use App\Http\Controllers\PublicFormController;
 use App\Models\Attachment;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Route;
@@ -128,15 +129,14 @@ Route::prefix('f')->name('public.')->group(function () {
 
 // Public form submission routes
 Route::prefix('formularios')->name('public.forms.')->group(function () {
-    Route::get('{uuid}', function () {
-        abort(404);
-    })->name('show');
+    Route::get('{uuid}', [PublicFormController::class, 'show'])->name('show');
+    Route::post('{uuid}', [PublicFormController::class, 'store'])->name('store');
+    Route::get('{uuid}/gracias', [PublicFormController::class, 'thanks'])->name('thanks');
 });
 
 Route::prefix('p')->name('public.forms.standalone.')->group(function () {
-    Route::get('{slug}', function () {
-        abort(404);
-    })->name('show');
+    Route::get('{slug}', [PublicFormController::class, 'showStandalone'])->name('show');
+    Route::post('{slug}', [PublicFormController::class, 'storeStandalone'])->name('store');
 });
 
 require __DIR__.'/auth.php';

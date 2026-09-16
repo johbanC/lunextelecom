@@ -27,8 +27,12 @@
     "file": "assets/instrument-sans-600-normal-B9e8oLYv.woff",
     "src": "_instrument-sans-600-normal-B9e8oLYv.woff"
   },
+  "_signature_pad-Bml6PZtx.js": {
+    "file": "assets/signature_pad-Bml6PZtx.js",
+    "name": "signature_pad"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-M1qRrIGD.css",
+    "file": "assets/app-6W-jEnhN.css",
     "name": "app",
     "names": [
       "app.css"
@@ -37,15 +41,27 @@
     "isEntry": true
   },
   "resources/js/agreement-form.js": {
-    "file": "assets/agreement-form-ZuziAX30.js",
+    "file": "assets/agreement-form-CiWuYA1w.js",
     "name": "agreement-form",
     "src": "resources/js/agreement-form.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_signature_pad-Bml6PZtx.js"
+    ]
   },
   "resources/js/app.js": {
     "file": "assets/app-BvRk9kiK.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
+  },
+  "resources/js/form-submission.js": {
+    "file": "assets/form-submission-el5FQ4Ic.js",
+    "name": "form-submission",
+    "src": "resources/js/form-submission.js",
+    "isEntry": true,
+    "imports": [
+      "_signature_pad-Bml6PZtx.js"
+    ]
   }
 }
