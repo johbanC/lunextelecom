@@ -113,16 +113,19 @@ Route::prefix('f')->name('public.')->group(function () {
     Route::get('{uuid}', [PublicAgreementController::class, 'show'])->name('agreements.show');
     Route::post('{uuid}', [PublicAgreementController::class, 'store'])->name('agreements.store');
     Route::get('{uuid}/gracias', [PublicAgreementController::class, 'thanks'])->name('agreements.thanks');
+});
 
-    // Form submissions routes
-    Route::prefix('forms')->name('forms.')->group(function () {
-        Route::get('{uuid}', function () {
-            // Placeholder for form submission display
-        })->name('show');
-        Route::get('{slug}', function () {
-            // Placeholder for standalone form display
-        })->name('standalone.show');
-    });
+// Public form submission routes
+Route::prefix('formularios')->name('public.forms.')->group(function () {
+    Route::get('{uuid}', function () {
+        abort(404);
+    })->name('show');
+});
+
+Route::prefix('p')->name('public.forms.standalone.')->group(function () {
+    Route::get('{slug}', function () {
+        abort(404);
+    })->name('show');
 });
 
 require __DIR__.'/auth.php';
