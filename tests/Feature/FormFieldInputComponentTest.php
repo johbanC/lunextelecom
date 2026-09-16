@@ -6,6 +6,8 @@ use App\Models\FormField;
 use App\Models\FormTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 use Tests\TestCase;
 
 class FormFieldInputComponentTest extends TestCase
@@ -34,5 +36,21 @@ class FormFieldInputComponentTest extends TestCase
         $html = (string) view('components.form-field-input', ['field' => $field, 'value' => '6688', 'readonly' => true])->render();
 
         $this->assertStringContainsString('readonly', $html);
+    }
+
+    public function test_it_displays_a_validation_error_for_the_field(): void
+    {
+        $user = User::factory()->create();
+        $template = FormTemplate::create(['name' => 'T2', 'mode' => 'standalone', 'slug' => 't2', 'created_by' => $user->id]);
+        $field = $template->fields()->create(['label' => 'Full Name', 'field_type' => FormField::TYPE_TEXT]);
+
+        $errors = new ViewErrorBag();
+        $errors->put('default', new MessageBag(['values.full_name' => ['This field is required.']]));
+
+        $html = (string) view('components.form-field-input', ['field' => $field, 'value' => '', 'readonly' => false])
+            ->with('errors', $errors)
+            ->render();
+
+        $this->assertStringContainsString('This field is required.', $html);
     }
 }
