@@ -30,6 +30,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'agreements.create',
             'agreements.manage',
             'agreements.extend',
+            'forms.view',
+            'forms.create',
+            'forms.manage',
+        ],
+        'Plantillas de formulario' => [
+            'form_templates.manage',
         ],
         'Usuarios y roles' => [
             'users.manage',
