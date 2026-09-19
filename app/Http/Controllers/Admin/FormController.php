@@ -3,36 +3,141 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Agreement;
 use App\Models\FormSubmission;
 use App\Models\FormTemplate;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class FormController extends Controller
 {
+    /**
+     * Listado combinado de todos los formularios: COAM Equipment (Agreement,
+     * único formulario con diseño propio y firma con canvas) y los envíos de
+     * plantillas configurables. Son sistemas separados por debajo (el modelo
+     * Agreement no se toca), pero de cara al usuario son "el mismo tipo de
+     * cosa" — un formulario que alguien llena y firma/aprueba — así que
+     * comparten una sola pantalla de listado.
+     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', FormSubmission::class);
 
         $status = $request->query('status', 'all');
 
-        $submissions = FormSubmission::query()
-            ->with(['template', 'creator', 'manager'])
-            ->when($status === 'pending', fn ($q) => $q->pending())
-            ->when($status === 'submitted', fn ($q) => $q->submitted())
-            ->when($status === 'to_manage', fn ($q) => $q->toManage())
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
+        $rows = new Collection;
+
+        if ($request->user()->can('agreements.view')) {
+            $rows = $rows->concat(
+                Agreement::query()->with(['creator', 'manager'])->latest()->limit(500)->get()
+                    ->map(fn (Agreement $agreement) => $this->rowFromAgreement($agreement))
+            );
+        }
+
+        if ($request->user()->can('forms.view')) {
+            $rows = $rows->concat(
+                FormSubmission::query()->with(['template', 'creator', 'manager', 'values.field'])->latest()->limit(500)->get()
+                    ->map(fn (FormSubmission $submission) => $this->rowFromSubmission($submission))
+            );
+        }
 
         $counts = [
-            'all' => FormSubmission::count(),
-            'pending' => FormSubmission::pending()->count(),
-            'submitted' => FormSubmission::submitted()->count(),
-            'to_manage' => FormSubmission::toManage()->count(),
+            'all' => $rows->count(),
+            'pending' => $rows->where('status', 'pending')->count(),
+            'expired' => $rows->where('status', 'expired')->count(),
+            'completed' => $rows->where('status', 'completed')->count(),
+            'to_manage' => $rows->where('to_manage', true)->count(),
         ];
 
-        return view('admin.forms.index', compact('submissions', 'status', 'counts'));
+        $filtered = match ($status) {
+            'pending', 'expired', 'completed' => $rows->where('status', $status),
+            'to_manage' => $rows->where('to_manage', true),
+            default => $rows,
+        };
+
+        $filtered = $filtered->sortByDesc('created_at')->values();
+
+        $page = (int) $request->query('page', 1);
+        $perPage = 15;
+
+        $rowsForm = new LengthAwarePaginator(
+            $filtered->forPage($page, $perPage),
+            $filtered->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $onDemandTemplates = FormTemplate::where('is_active', true)
+            ->where('mode', FormTemplate::MODE_ON_DEMAND)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.forms.index', [
+            'rows' => $rowsForm,
+            'status' => $status,
+            'counts' => $counts,
+            'onDemandTemplates' => $onDemandTemplates,
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function rowFromAgreement(Agreement $agreement): array
+    {
+        $status = $agreement->isSigned() ? 'completed' : ($agreement->isExpired() ? 'expired' : 'pending');
+
+        return [
+            'source' => 'agreement',
+            'type' => Agreement::typeLabel($agreement->type),
+            'identifier' => $agreement->account_id,
+            'status' => $status,
+            'to_manage' => $agreement->isSigned() && ! $agreement->isManaged(),
+            'managed' => $agreement->isManaged(),
+            'managed_label' => $agreement->linked_ticket_number,
+            'manager_name' => $agreement->manager?->name,
+            'managed_at' => $agreement->managed_at,
+            'created_at' => $agreement->created_at,
+            'creator_name' => $agreement->creator?->name,
+            'completed_at' => $agreement->signed_at,
+            'completed_label' => __('Signed'),
+            'show_url' => route('admin.agreements.show', $agreement),
+            'pdf_url' => $agreement->isSigned() ? route('admin.agreements.pdf', $agreement) : null,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function rowFromSubmission(FormSubmission $submission): array
+    {
+        $status = $submission->isSubmitted() ? 'completed' : ($submission->isExpired() ? 'expired' : 'pending');
+
+        $identifier = $submission->values
+            ->sortBy(fn ($value) => $value->field->sort_order ?? 0)
+            ->pluck('value')
+            ->first(fn ($value) => filled($value)) ?? '—';
+
+        return [
+            'source' => 'submission',
+            'type' => $submission->template->name,
+            'identifier' => $identifier,
+            'status' => $status,
+            'to_manage' => $submission->isSubmitted() && ! $submission->isManaged(),
+            'managed' => $submission->isManaged(),
+            'managed_label' => $submission->reference_note,
+            'manager_name' => $submission->manager?->name,
+            'managed_at' => $submission->managed_at,
+            'created_at' => $submission->created_at,
+            'creator_name' => $submission->creator?->name,
+            'completed_at' => $submission->submitted_at,
+            'completed_label' => __('Submitted'),
+            'show_url' => route('admin.forms.show', $submission),
+            'pdf_url' => null,
+        ];
     }
 
     public function create()

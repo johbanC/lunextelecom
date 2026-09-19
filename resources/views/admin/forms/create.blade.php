@@ -3,7 +3,7 @@
 @section('title', __('Generate link'))
 
 @section('content')
-    <div class="max-w-lg mx-auto" x-data="{ templateId: '{{ old('form_template_id', $templates->first()->id ?? '') }}' }">
+    <div class="max-w-lg mx-auto" x-data="{ templateId: '{{ old('form_template_id', request('form_template_id', $templates->first()->id ?? '')) }}' }">
         <div class="mb-6 text-center">
             <div class="inline-flex items-center justify-center size-12 rounded-2xl bg-brand-blue-50 text-brand-blue mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">

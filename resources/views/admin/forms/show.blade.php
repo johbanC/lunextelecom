@@ -65,6 +65,15 @@
                 @endif
             @endunless
 
+            @if ($submission->template->isNarrative())
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ __('Message shown to the client') }}</p>
+                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                        {{ $submission->interpolatedInstructions() }}
+                    </div>
+                </div>
+            @endif
+
             <div>
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{{ __('Data') }}</p>
                 <div class="rounded-xl border border-gray-200 overflow-hidden">

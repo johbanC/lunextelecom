@@ -12,7 +12,7 @@ use App\Models\Ticket;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
-Route::redirect('/', '/admin/agreements');
+Route::redirect('/', '/admin/forms');
 
 Route::get('email-tracking/{token}', [EmailTrackingController::class, 'pixel'])
     ->where('token', '[0-9a-fA-F\-]{36}')

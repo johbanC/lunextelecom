@@ -1,4 +1,12 @@
-<div>
+<div x-data="{ show: false, message: '' }" x-on:notify.window="message = $event.detail.message; show = true; setTimeout(() => show = false, 3000)">
+    <div x-show="show" x-cloak x-transition
+        class="fixed top-4 right-4 z-[60] inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-4 shrink-0">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+        </svg>
+        <span x-text="message"></span>
+    </div>
+
     <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
         <div>
             <h1 class="text-xl font-bold text-gray-800">{{ __('Form templates') }}</h1>
@@ -89,8 +97,13 @@
                                     <span class="text-[10px] font-bold uppercase text-brand-red shrink-0">{{ __('Required') }}</span>
                                 @endif
                             </div>
-                            <div class="text-xs text-gray-400 mt-0.5 pl-[22px]">
-                                {{ $fieldTypes[$field->field_type] ?? $field->field_type }}@if ($field->pick_count) &middot; {{ __('Pick :n', ['n' => $field->pick_count]) }} @endif
+                            <div class="text-xs text-gray-400 mt-0.5 pl-[22px] flex items-center gap-1.5 flex-wrap">
+                                <span>{{ $fieldTypes[$field->field_type] ?? $field->field_type }}@if ($field->pick_count) &middot; {{ __('Pick :n', ['n' => $field->pick_count]) }} @endif</span>
+                                <span>&middot;</span>
+                                <code class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-mono">{{ '{'.'{' }}{{ $field->key }}{{ '}'.'}' }}</code>
+                                @unless ($field->editable_by_recipient)
+                                    <span class="text-[10px] font-bold uppercase text-brand-blue-600">{{ __('Filled by agent') }}</span>
+                                @endunless
                             </div>
                             @if ($field->options->isNotEmpty())
                                 <div class="mt-1.5 pl-[22px] flex flex-wrap gap-1">
@@ -115,7 +128,7 @@
     @if ($showTemplateForm)
         <div class="fixed inset-0 z-50 flex items-center justify-center px-4" x-data>
             <div class="absolute inset-0 bg-gray-500/75" wire:click="$set('showTemplateForm', false)"></div>
-            <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">{{ $templateForm['id'] ? __('Edit template') : __('New template') }}</h2>
                 <form wire:submit="saveTemplate" class="space-y-4">
                     <div>
@@ -137,8 +150,32 @@
                         @error('templateForm.slug') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Layout') }}</label>
+                        <select wire:model="templateForm.display_mode" class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm bg-white focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition">
+                            <option value="{{ \App\Models\FormTemplate::DISPLAY_FIELDS }}">{{ __('Field list') }}</option>
+                            <option value="{{ \App\Models\FormTemplate::DISPLAY_NARRATIVE }}">{{ __('Narrative text (read & sign)') }}</option>
+                        </select>
+                        @error('templateForm.display_mode') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1">{{ __('Instructions') }}</label>
-                        <textarea wire:model="templateForm.instructions" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition"></textarea>
+                        <textarea wire:model="templateForm.instructions" rows="8" class="w-full resize-none border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition"></textarea>
+                        <p class="text-xs text-gray-400 mt-1" x-show="$wire.templateForm.display_mode === '{{ \App\Models\FormTemplate::DISPLAY_NARRATIVE }}'">
+                            {{ __('In narrative layout, this is the whole message the client sees. Use') }}
+                            <code>@{{field_key}}</code>
+                            {{ __('to insert a field\'s value — e.g.') }}
+                            <code>@{{full_name}}</code>.
+                        </p>
+                        @if ($templateForm['id'] && $selectedTemplate?->id === $templateForm['id'] && $selectedTemplate->fields->isNotEmpty())
+                            <div class="mt-2 p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+                                <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">{{ __('Available variables') }}</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    @foreach ($selectedTemplate->fields as $field)
+                                        <code class="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-gray-600 font-mono text-[11px]" title="{{ $field->label }}">{{ '{'.'{' }}{{ $field->key }}{{ '}'.'}' }}</code>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                         @error('templateForm.instructions') <p class="text-xs text-brand-red mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>

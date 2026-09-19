@@ -26,6 +26,7 @@ class FormTemplateManager extends Component
         'instructions' => '',
         'requires_signature' => false,
         'mode' => FormTemplate::MODE_ON_DEMAND,
+        'display_mode' => FormTemplate::DISPLAY_FIELDS,
         'notify_group_id' => null,
         'is_active' => true,
     ];
@@ -68,6 +69,7 @@ class FormTemplateManager extends Component
             'instructions' => '',
             'requires_signature' => false,
             'mode' => FormTemplate::MODE_ON_DEMAND,
+            'display_mode' => FormTemplate::DISPLAY_FIELDS,
             'notify_group_id' => null,
             'is_active' => true,
         ];
@@ -78,6 +80,8 @@ class FormTemplateManager extends Component
     {
         $template = FormTemplate::findOrFail($templateId);
 
+        $this->templateId = $template->id;
+
         $this->templateForm = [
             'id' => $template->id,
             'name' => $template->name,
@@ -85,6 +89,7 @@ class FormTemplateManager extends Component
             'instructions' => $template->instructions,
             'requires_signature' => $template->requires_signature,
             'mode' => $template->mode,
+            'display_mode' => $template->display_mode,
             'notify_group_id' => $template->notify_group_id,
             'is_active' => $template->is_active,
         ];
@@ -93,11 +98,15 @@ class FormTemplateManager extends Component
 
     public function saveTemplate(): void
     {
-        $this->authorize(($this->templateForm['id'] ?? null) ? 'update' : 'create', FormTemplate::class);
+        $this->authorize(
+            ($this->templateForm['id'] ?? null) ? 'update' : 'create',
+            ($this->templateForm['id'] ?? null) ? FormTemplate::findOrFail($this->templateForm['id']) : FormTemplate::class
+        );
 
         $data = $this->validate([
             'templateForm.name' => ['required', 'string', 'max:255'],
             'templateForm.mode' => ['required', 'in:'.FormTemplate::MODE_ON_DEMAND.','.FormTemplate::MODE_STANDALONE],
+            'templateForm.display_mode' => ['required', 'in:'.FormTemplate::DISPLAY_FIELDS.','.FormTemplate::DISPLAY_NARRATIVE],
             'templateForm.slug' => [
                 'nullable', 'string', 'max:255', 'alpha_dash',
                 'required_if:templateForm.mode,'.FormTemplate::MODE_STANDALONE,
@@ -117,6 +126,7 @@ class FormTemplateManager extends Component
                 'instructions' => $data['instructions'] ?: null,
                 'requires_signature' => (bool) $data['requires_signature'],
                 'mode' => $data['mode'],
+                'display_mode' => $data['display_mode'],
                 'notify_group_id' => $data['notify_group_id'],
                 'is_active' => (bool) $data['is_active'],
                 'created_by' => ($this->templateForm['id'] ?? null) ? FormTemplate::find($this->templateForm['id'])->created_by : Auth::id(),
@@ -125,6 +135,7 @@ class FormTemplateManager extends Component
 
         $this->templateId = $template->id;
         $this->showTemplateForm = false;
+        $this->dispatch('notify', message: __('Template saved.'));
     }
 
     public function newField(): void
@@ -203,6 +214,8 @@ class FormTemplateManager extends Component
         } else {
             $this->showFieldForm = false;
         }
+
+        $this->dispatch('notify', message: __('Field saved.'));
     }
 
     public function deleteField(int $fieldId): void

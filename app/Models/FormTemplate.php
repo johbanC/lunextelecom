@@ -15,9 +15,13 @@ class FormTemplate extends Model
 
     public const MODE_STANDALONE = 'standalone';
 
+    public const DISPLAY_FIELDS = 'fields';
+
+    public const DISPLAY_NARRATIVE = 'narrative';
+
     protected $fillable = [
         'name', 'slug', 'instructions', 'requires_signature',
-        'mode', 'notify_group_id', 'is_active', 'created_by',
+        'mode', 'display_mode', 'notify_group_id', 'is_active', 'created_by',
     ];
 
     protected $casts = [
@@ -28,6 +32,11 @@ class FormTemplate extends Model
     public function isStandalone(): bool
     {
         return $this->mode === self::MODE_STANDALONE;
+    }
+
+    public function isNarrative(): bool
+    {
+        return $this->display_mode === self::DISPLAY_NARRATIVE;
     }
 
     /**

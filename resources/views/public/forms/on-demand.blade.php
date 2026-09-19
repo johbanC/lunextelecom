@@ -49,7 +49,11 @@
                     <input type="hidden" name="signature" id="signatureInput">
                 @endif
 
-                @if ($template->instructions)
+                @if ($template->isNarrative())
+                    <div class="prose prose-sm max-w-none text-gray-700 whitespace-pre-line leading-relaxed">
+                        {{ $submission->interpolatedInstructions() }}
+                    </div>
+                @elseif ($template->instructions)
                     <p class="text-sm text-gray-600">{{ $template->instructions }}</p>
                 @endif
 
@@ -63,11 +67,13 @@
                     </div>
                 @endif
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
-                    @foreach ($template->fields as $field)
-                        <x-form-field-input :field="$field" :value="$knownValues[$field->id] ?? null" :readonly="!$field->editable_by_recipient" />
-                    @endforeach
-                </div>
+                @unless ($template->isNarrative())
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+                        @foreach ($template->fields as $field)
+                            <x-form-field-input :field="$field" :value="$knownValues[$field->id] ?? null" :readonly="!$field->editable_by_recipient" />
+                        @endforeach
+                    </div>
+                @endunless
 
                 @if ($template->requires_signature)
                     <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">

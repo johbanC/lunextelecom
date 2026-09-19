@@ -15,27 +15,13 @@
                     <img src="{{ asset('img/logo.png') }}" alt="Lunex Telecom" class="h-9 w-auto">
                 </a>
                 <div class="hidden sm:flex items-center gap-1.5">
-                    @can('agreements.view')
-                        <a href="{{ route('admin.agreements.index') }}"
-                            class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
-                                {{ request()->routeIs('admin.agreements.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
-                            {{ __('Forms') }}
-                        </a>
-                    @endcan
-                    @can('viewAny', \App\Models\FormSubmission::class)
+                    @canany(['agreements.view', 'forms.view'])
                         <a href="{{ route('admin.forms.index') }}"
                             class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
-                                {{ request()->routeIs('admin.forms.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
-                            {{ __('New Forms') }}
+                                {{ request()->routeIs('admin.agreements.*', 'admin.forms.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
+                            {{ __('Forms') }}
                         </a>
-                    @endcan
-                    @can('viewAny', \App\Models\FormTemplate::class)
-                        <a href="{{ route('admin.form-templates.index') }}"
-                            class="px-3 py-1.5 rounded-lg text-sm font-semibold transition
-                                {{ request()->routeIs('admin.form-templates.*') ? 'bg-brand-blue-50 text-brand-blue-700' : 'text-gray-500 hover:text-gray-700' }}">
-                            {{ __('Form Templates') }}
-                        </a>
-                    @endcan
+                    @endcanany
                     @if (config('features.tickets'))
                         @can('viewAny', \App\Models\Ticket::class)
                             <a href="{{ route('admin.tickets.index') }}"

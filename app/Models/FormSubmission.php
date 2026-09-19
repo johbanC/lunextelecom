@@ -19,7 +19,8 @@ class FormSubmission extends Model
 
     protected $fillable = [
         'uuid', 'form_template_id', 'status', 'expires_at', 'signature_path',
-        'signed_ip', 'submitted_at', 'reference_note', 'created_by', 'managed_by', 'managed_at',
+        'signed_ip', 'submitted_at', 'reference_note',
+        'created_by', 'managed_by', 'managed_at',
     ];
 
     protected $casts = [
@@ -48,6 +49,25 @@ class FormSubmission extends Model
         return $this->template->isStandalone()
             ? route('public.forms.standalone.show', $this->template->slug)
             : route('public.forms.show', $this->uuid);
+    }
+
+    /**
+     * Reemplaza placeholders {{clave}} en el texto de la plantilla (ej.
+     * "Hello, {{full_name}}...") con los valores ya capturados de este
+     * envío — para las plantillas de tipo "narrative" (texto + firma, sin
+     * cajas de campo sueltas).
+     */
+    public function interpolatedInstructions(): string
+    {
+        $text = $this->template->instructions ?? '';
+
+        $values = $this->values->mapWithKeys(fn (FormSubmissionValue $value) => [
+            $value->field->key => $value->value,
+        ]);
+
+        return preg_replace_callback('/\{\{\s*([a-z0-9_]+)\s*\}\}/i', function (array $matches) use ($values) {
+            return $values[$matches[1]] ?? $matches[0];
+        }, $text);
     }
 
     public function scopePending($query)

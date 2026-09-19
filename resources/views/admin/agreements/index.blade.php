@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Forms'))
+@section('title', __('COAM Equipment'))
 
 @section('content')
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">

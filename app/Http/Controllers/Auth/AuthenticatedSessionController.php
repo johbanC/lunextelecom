@@ -28,7 +28,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.agreements.index', absolute: false));
+        return redirect()->intended(route('admin.forms.index', absolute: false));
     }
 
     /**
